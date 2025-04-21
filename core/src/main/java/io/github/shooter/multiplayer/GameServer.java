@@ -1,7 +1,8 @@
 package io.github.shooter.multiplayer;
 
-import com.esotericsoftware.kryonet.Server;
 import java.io.IOException;
+
+import com.esotericsoftware.kryonet.Server;
 
 public class GameServer {
     private Server server;
@@ -13,5 +14,11 @@ public class GameServer {
         server.bind(Network.port);
         server.start();
         System.out.println("Server started on port " + Network.port);
+    }
+    
+    public void stop() {
+        if (server != null) {
+            server.stop();
+        }
     }
 }
