@@ -31,22 +31,30 @@ public class MenuScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         
         game.batch.begin();
-        game.font.draw(game.batch, "Welcome to za game Shooter!", 100, 300);
-        game.font.draw(game.batch, "Press S for Single Player", 100, 250);
-        game.font.draw(game.batch, "Press M to host and join Multiplayer", 100, 220);
-        game.font.draw(game.batch, "Press J to join Multiplayer", 100, 190);
+        game.font.draw(game.batch, "Welcome to 2D Shooter", 240, 400);
+        game.font.draw(game.batch, "S - Single Player", 240, 300);
+        game.font.draw(game.batch, "M - Host Multiplayer", 240, 250);
+        game.font.draw(game.batch, "J - Join Multiplayer", 240, 200);
+        
+        try {
+            java.net.InetAddress localHost = java.net.InetAddress.getLocalHost();
+            game.font.draw(game.batch, "Your IP: " + localHost.getHostAddress(), 240, 150);
+        } catch (Exception e) {
+            game.font.draw(game.batch, "Could not determine your IP", 240, 150);
+        }
+        
         game.batch.end();
         
         if(Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.S)) {
-            game.startGame(false, false);
+            game.startGame(false, false, null);
         }
         
         if(Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.M)) {
-            game.startGame(true, true);
+            game.startGame(true, true, "localhost");
         }
         
         if(Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.J)) {
-            game.startGame(true, false);
+            game.setScreen(new IPInputScreen(game));
         }
     }
 

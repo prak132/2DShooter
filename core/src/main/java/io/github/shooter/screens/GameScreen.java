@@ -1,5 +1,7 @@
 package io.github.shooter.screens;
 
+import java.io.IOException;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -7,52 +9,50 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector3;
 
 import io.github.shooter.Main;
+import io.github.shooter.multiplayer.GameClient;
 
 public class GameScreen implements Screen {
     Main game;
     OrthographicCamera camera;
     Vector3 touchPoint;
 
-    boolean multiPlayer;
+    private boolean multiplayer;
+    private String serverAddress = "localhost";
+    private GameClient client;
 
-
-    public GameScreen(Main game, boolean multiplayer) {
+    public GameScreen(Main game, boolean multiplayer, String serverAddress) {
         this.game = game;
-        this.multiPlayer = multiplayer;
+        this.multiplayer = multiplayer;
+        if (serverAddress != null && !serverAddress.isEmpty()) {
+            this.serverAddress = serverAddress;
+        }    
         camera = new OrthographicCamera();
         // Make it dynamic to resizing and stuff
         camera.setToOrtho(false, 800, 600);
         touchPoint = new Vector3();
     }
 
-    @Override public void show() {}
-    @Override public void render(float delta) {
+    @Override
+    public void show() {
+        if (multiplayer) {
+            try {
+                client = new GameClient(serverAddress);
+            } catch (IOException e) {
+                System.err.println("Failed to connect to server: " + e.getMessage());
+            }
+        }
+    }
+
+    @Override 
+    public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
-        
-        game.batch.begin();
-        game.font.draw(game.batch, "Welcome to 2D Shooter!", 100, 300);
-        game.font.draw(game.batch, "Press S for Single Player", 100, 250);
-        game.font.draw(game.batch, "Press M to host and join Multiplayer", 100, 220);
-        game.font.draw(game.batch, "Press J to join Multiplayer", 100, 190);
-        game.batch.end();
-        
-        if(Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.S)) {
-            game.startGame(false, false);
-        }
-        
-        if(Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.M)) {
-            game.startGame(true, true);
-        }
-        
-        if(Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.J)) {
-            game.startGame(true, false);
-        }
     }
 
-    @Override public void resize(int width, int height) {
+    @Override 
+    public void resize(int width, int height) {
         camera.setToOrtho(false, width, height);
         camera.update();
     }

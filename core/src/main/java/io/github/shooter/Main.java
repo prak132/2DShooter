@@ -23,16 +23,24 @@ public class Main extends Game {
         setScreen(new MenuScreen(this));
     }
     
-    public void startGame(boolean multiplayer, boolean hostServer) {
+    public void startGame(boolean multiplayer, boolean hostServer, String serverAddress) {
         if (hostServer) {
             try {
                 server = new GameServer();
+                System.out.println("Server started. Your local IP address is needed for friends to connect.");
+                try {
+                    java.net.InetAddress localHost = java.net.InetAddress.getLocalHost();
+                    System.out.println("Your computer name: " + localHost.getHostName());
+                    System.out.println("Your IP address: " + localHost.getHostAddress());
+                } catch (Exception e) {
+                    System.out.println("Could not determine IP address automatically.");
+                }
             } catch (IOException e) {
-                System.err.println("Error staring server: " + e.getMessage());
+                System.err.println("Error starting server: " + e.getMessage());
             }
         }
         
-        setScreen(new GameScreen(this, multiplayer));
+        setScreen(new GameScreen(this, multiplayer, serverAddress));
     }
 
     @Override
