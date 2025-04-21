@@ -1,4 +1,4 @@
-package com.mygdx.shooter2d.multiplayer;
+package io.github.shooter.multiplayer;
 
 import com.esotericsoftware.kryonet.Server;
 import java.io.IOException;

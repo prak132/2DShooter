@@ -1,5 +1,7 @@
-package com.mygdx.shooter2d.multiplayer;
+package io.github.shooter.multiplayer;
 
+import com.esotericsoftware.kryonet.Listener;
+import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Server;
 
 public class ServerListener extends Listener {
