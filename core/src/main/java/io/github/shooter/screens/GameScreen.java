@@ -44,7 +44,9 @@ public class GameScreen implements Screen {
     private float playerRadius = 15f;
     private float playerSpeed = 200f;
     private Vector2 playerVelocity;
-    
+    private float[] playerAccel;
+    private float slideAmount = 12f;
+
     private ArrayList<Bullet> bullets;
     private long lastShotTime;
     private long shotCooldown = 250; // ms
@@ -69,7 +71,8 @@ public class GameScreen implements Screen {
         touchPoint = new Vector3();
         player = new Player(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, playerRadius);
         playerVelocity = new Vector2(0, 0);
-        
+        playerAccel = new float[]{0, 0, 0, 0};
+
         shapeRenderer = new ShapeRenderer();
         
         bullets = new ArrayList<Bullet>();
@@ -174,17 +177,45 @@ public class GameScreen implements Screen {
     private void handleInput(float delta) {
         playerVelocity.set(0, 0);
         if (Gdx.input.isKeyPressed(Keys.A)) {
-            playerVelocity.x -= playerSpeed;
+            playerAccel[0] -= playerSpeed/slideAmount;
+            playerAccel[0] = Math.max(playerAccel[0], -playerSpeed);
+        } else {
+            playerAccel[0] += playerSpeed/slideAmount;
+            playerAccel[0] = Math.min(playerAccel[0], 0);
         }
+        
+        playerVelocity.x += playerAccel[0];
+
         if (Gdx.input.isKeyPressed(Keys.D)) {
-            playerVelocity.x += playerSpeed;
+            playerAccel[1] += playerSpeed/slideAmount;
+            playerAccel[1] = Math.min(playerAccel[1], playerSpeed);
+        } else {
+            playerAccel[1] -= playerSpeed/slideAmount;
+            playerAccel[1] = Math.max(playerAccel[1], 0);
         }
-        if (Gdx.input.isKeyPressed(Keys.W)) {
-            playerVelocity.y += playerSpeed;
-        }
+
+        playerVelocity.x += playerAccel[1];
+
         if (Gdx.input.isKeyPressed(Keys.S)) {
-            playerVelocity.y -= playerSpeed;
+            playerAccel[2] -= playerSpeed/slideAmount;
+            playerAccel[2] = Math.max(playerAccel[2], -playerSpeed);
+        } else {
+            playerAccel[2] += playerSpeed/slideAmount;
+            playerAccel[2] = Math.min(playerAccel[2], 0);
         }
+        
+        playerVelocity.y += playerAccel[2];
+
+        if (Gdx.input.isKeyPressed(Keys.W)) {
+            playerAccel[3] += playerSpeed/slideAmount;
+            playerAccel[3] = Math.min(playerAccel[3], playerSpeed);
+        } else {
+            playerAccel[3] -= playerSpeed/slideAmount;
+            playerAccel[3] = Math.max(playerAccel[3], 0);
+        }
+
+        playerVelocity.y += playerAccel[3];
+
         player.setVelocity(playerVelocity);
         
         // mouse stuff
