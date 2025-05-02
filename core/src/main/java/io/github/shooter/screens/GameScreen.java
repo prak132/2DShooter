@@ -9,6 +9,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -37,8 +38,8 @@ public class GameScreen implements Screen {
     private Main game;
     private OrthographicCamera camera;
     private Viewport viewport;
-    private Vector3 touchPoint;
     private ShapeRenderer shapeRenderer;
+    private InputAdapter inputProcessor;
     
     private Player player;
     private float playerRadius = 15f;
@@ -68,7 +69,6 @@ public class GameScreen implements Screen {
         viewport.apply();
         camera.position.set(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, 0);
         
-        touchPoint = new Vector3();
         player = new Player(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, playerRadius);
         playerVelocity = new Vector2(0, 0);
         playerAccel = new float[]{0, 0, 0, 0};
@@ -76,13 +76,33 @@ public class GameScreen implements Screen {
         shapeRenderer = new ShapeRenderer();
         
         bullets = new ArrayList<Bullet>();
+        
+        // input stuff needed to be done before show
+        inputProcessor = new InputAdapter() {
+            @Override
+            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                if (button == Input.Buttons.LEFT && TimeUtils.timeSinceMillis(lastShotTime) > shotCooldown) {
+                    Vector3 mousePos = new Vector3(screenX, screenY, 0);
+                    camera.unproject(mousePos);
+                    float dirX = mousePos.x - player.getX();
+                    float dirY = mousePos.y - player.getY();
+                    shoot(dirX, dirY);
+                    lastShotTime = TimeUtils.millis();
+                    return true;
+                }
+                return false;
+            }
+        };
     }
 
     @Override
     public void show() {
+        // fixes a bug
+        Gdx.input.setInputProcessor(inputProcessor);
+        
         if (multiplayer) {
             try {
-                client = new GameClient(serverAddress);
+                client = new GameClient(serverAddress, true);
                 ClientListener.BulletListener bulletListener = new ClientListener.BulletListener() {
                     @Override
                     public void onBulletFired(int playerId, float x, float y, float dirX, float dirY) {
@@ -288,7 +308,11 @@ public class GameScreen implements Screen {
 
     @Override public void pause() {}
     @Override public void resume() {}
-    @Override public void hide() {}
+    
+    @Override 
+    public void hide() {
+        Gdx.input.setInputProcessor(null);
+    }
     
     @Override 
     public void dispose() {

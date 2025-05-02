@@ -18,7 +18,13 @@ public class GameClient {
     private Map<Integer, PlayerData> otherPlayers = new HashMap<>();
 
     public GameClient(String serverAddress) throws IOException {
-        System.out.println("Attempting to connect to: " + serverAddress);
+        this(serverAddress, true);
+    }
+    
+    public GameClient(String serverAddress, boolean showMessages) throws IOException {
+        if (showMessages) {
+            System.out.println("Attempting to connect to: " + serverAddress);
+        }
         
         client = new Client();
         Network.register(client.getKryo());
@@ -33,7 +39,10 @@ public class GameClient {
             
             client.connect(5000, serverAddress, Network.port);
             clientId = client.getID();
-            System.out.println("Connected to server at " + serverAddress + " with ID: " + clientId);
+            
+            if (showMessages) {
+                System.out.println("Connected to server at " + serverAddress + " with ID: " + clientId);
+            }
         } catch (IOException e) {
             System.err.println("Connection failed: " + e.getMessage());
             if (client != null) {
