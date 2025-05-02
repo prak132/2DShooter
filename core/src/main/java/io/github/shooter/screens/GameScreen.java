@@ -132,6 +132,12 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        updateBullets(delta);
+        
+        if (multiplayer) {
+            checkBulletCollisions();
+        }
+
         if (!player.isAlive() && player.shouldRespawn()) {
             player.respawn(WORLD_WIDTH, WORLD_HEIGHT);
         }
@@ -140,18 +146,28 @@ public class GameScreen implements Screen {
             handleInput(delta);
             player.update(delta, WORLD_WIDTH, WORLD_HEIGHT);
         }
-        
-        updateBullets(delta);
-        
-        if (multiplayer) {
-            checkBulletCollisions();
-        }
-        
+
         camera.update();
-        
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeType.Filled);
+        shapeRenderer.setColor(Color.RED);
+        for (Bullet bullet : bullets) {
+            shapeRenderer.circle(bullet.getX(), bullet.getY(), bullet.getRadius());
+        }
         
+        Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+        camera.unproject(mousePos);
+
+        Vector2 playerPos = new Vector2(player.getX(), player.getY());
+        Vector2 dir = new Vector2(mousePos.x, mousePos.y).sub(playerPos).nor();
+        float gunLength = 25f;
+        float gunWidth = 10f;
+
+        Vector2 gunEnd = new Vector2(playerPos).add(new Vector2(dir).scl(gunLength));
+
+        shapeRenderer.setColor(Color.GRAY);
+        shapeRenderer.rectLine(playerPos, gunEnd, gunWidth);
+
         if (player.isAlive()) {
             shapeRenderer.setColor(Color.WHITE);
             shapeRenderer.circle(player.getX(), player.getY(), player.getRadius());
@@ -167,12 +183,7 @@ public class GameScreen implements Screen {
                 }
             }
         }
-        
-        shapeRenderer.setColor(Color.RED);
-        for (Bullet bullet : bullets) {
-            shapeRenderer.circle(bullet.getX(), bullet.getY(), bullet.getRadius());
-        }
-        
+
         shapeRenderer.end();
         
         game.batch.setProjectionMatrix(camera.combined);
