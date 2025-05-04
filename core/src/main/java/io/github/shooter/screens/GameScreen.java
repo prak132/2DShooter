@@ -8,11 +8,12 @@ import java.util.Map;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Circle;
@@ -25,69 +26,63 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import io.github.shooter.Main;
 import io.github.shooter.game.Bullet;
+import io.github.shooter.game.GameMap;
 import io.github.shooter.game.Player;
 import io.github.shooter.multiplayer.ClientListener;
 import io.github.shooter.multiplayer.GameClient;
 import io.github.shooter.multiplayer.GameClient.PlayerData;
 
 public class GameScreen implements Screen {
-    // todo: add map skin
-    private static final float WORLD_WIDTH = 800;
-    private static final float WORLD_HEIGHT = 600;
-    
-    private Main game;
-    private OrthographicCamera camera;
-    private Viewport viewport;
-    private ShapeRenderer shapeRenderer;
-    private InputAdapter inputProcessor;
-    
-    private Player player;
-    private float playerRadius = 15f;
-    private float playerSpeed = 200f;
-    private Vector2 playerVelocity;
-    private float[] playerAccel;
-    private float slideAmount = 12f;
 
-    private ArrayList<Bullet> bullets;
-    private long lastShotTime;
-    private long shotCooldown = 250; // ms
+    private static final float WORLD_WIDTH = 2000, WORLD_HEIGHT = 2000;
+    private static final float PLAYER_RADIUS = 40f;
 
-    // multiplayer
-    private boolean multiplayer;
-    private String serverAddress = "localhost";
+    private final Main game;
+    private final OrthographicCamera camera;
+    private final Viewport viewport;
+    private final ShapeRenderer shapeRenderer;
+    private final SpriteBatch batch;
+
+    private final Player player;
+    private final GameMap map;
+    private final ArrayList<Bullet> bullets = new ArrayList<>();
+
+    private final Vector2 vel = new Vector2();
+    private final float[] accel = { 0, 0, 0, 0 };
+    private final float speed = 200f, slide = 12f;
+
+    private long lastShot;
+    private final long shotCooldown = 250;
+
+    private final boolean multiplayer;
+    private final String serverAddress;
     private GameClient client;
+
+    private final InputAdapter input;
 
     public GameScreen(Main game, boolean multiplayer, String serverAddress) {
         this.game = game;
         this.multiplayer = multiplayer;
-        if (serverAddress != null && !serverAddress.isEmpty()) {
-            this.serverAddress = serverAddress;
-        }
-        
+        this.serverAddress = (serverAddress == null || serverAddress.isEmpty()) ? "localhost" : serverAddress;
+
         camera = new OrthographicCamera();
+        camera.zoom = 0.2f;
         viewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
         viewport.apply();
-        camera.position.set(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, 0);
-        
-        player = new Player(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, playerRadius);
-        playerVelocity = new Vector2(0, 0);
-        playerAccel = new float[]{0, 0, 0, 0};
 
         shapeRenderer = new ShapeRenderer();
-        
-        bullets = new ArrayList<Bullet>();
-        
-        // input stuff needed to be done before show
-        inputProcessor = new InputAdapter() {
+        batch = game.batch;
+
+        map = new GameMap();
+        player = new Player(WORLD_WIDTH / 2f, WORLD_HEIGHT / 2f, PLAYER_RADIUS);
+
+        input = new InputAdapter() {
             @Override
-            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-                if (button == Input.Buttons.LEFT && TimeUtils.timeSinceMillis(lastShotTime) > shotCooldown) {
-                    Vector3 mousePos = new Vector3(screenX, screenY, 0);
-                    camera.unproject(mousePos);
-                    float dirX = mousePos.x - player.getX();
-                    float dirY = mousePos.y - player.getY();
-                    shoot(dirX, dirY);
-                    lastShotTime = TimeUtils.millis();
+            public boolean touchDown(int sx, int sy, int p, int button) {
+                if (button == Input.Buttons.LEFT && TimeUtils.timeSinceMillis(lastShot) > shotCooldown) {
+                    Vector3 w = camera.unproject(new Vector3(sx, sy, 0));
+                    shoot(w.x - player.getX(), w.y - player.getY());
+                    lastShot = TimeUtils.millis();
                     return true;
                 }
                 return false;
@@ -97,213 +92,131 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-        // fixes a bug
-        Gdx.input.setInputProcessor(inputProcessor);
-        
-        if (multiplayer) {
-            try {
-                client = new GameClient(serverAddress, true);
-                ClientListener.BulletListener bulletListener = new ClientListener.BulletListener() {
-                    @Override
-                    public void onBulletFired(int playerId, float x, float y, float dirX, float dirY) {
-                        bullets.add(new Bullet(x, y, dirX, dirY, playerId));
-                    }
-                };
-                
-                ClientListener.PlayerHitListener hitListener = new ClientListener.PlayerHitListener() {
-                    @Override
-                    public void onPlayerHit(int sourceId, float damage) {
-                        player.takeDamage(damage);
-                    }
-                };
-                
-                ClientListener clientListener = new ClientListener(client);
-                clientListener.setBulletListener(bulletListener);
-                clientListener.setPlayerHitListener(hitListener);
-                client.getClient().addListener(clientListener);
-            } catch (IOException e) {
-                System.err.println("Failed to connect to server: " + e.getMessage());
-            }
+        Gdx.input.setInputProcessor(input);
+        if (!multiplayer)
+            return;
+        try {
+            client = new GameClient(serverAddress, true);
+            ClientListener l = new ClientListener(client);
+            l.setBulletListener((id, x, y, dx, dy) -> bullets.add(new Bullet(x, y, dx, dy, id)));
+            l.setPlayerHitListener((src, dmg) -> player.takeDamage(dmg));
+            client.getClient().addListener(l);
+        } catch (IOException e) {
+            System.err.println("Connect failed: " + e.getMessage());
         }
     }
 
-    @Override 
-    public void render(float delta) {
+    @Override
+    public void render(float dt) {
+        updateBullets(dt);
+        if (multiplayer)
+            checkBulletCollisions();
+        if (!player.isAlive() && player.shouldRespawn())
+            player.respawn(WORLD_WIDTH, WORLD_HEIGHT);
+
+        if (player.isAlive()) {
+            handleInput();
+            player.update(dt, WORLD_WIDTH, WORLD_HEIGHT, map.getObstacles());
+        }
+
+        camera.position.set(player.getX(), player.getY(), 0);
+        camera.update();
+
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        updateBullets(delta);
-        
-        if (multiplayer) {
-            checkBulletCollisions();
-        }
+        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
+        map.render(batch);
+        player.render(batch);
+        batch.end();
 
-        if (!player.isAlive() && player.shouldRespawn()) {
-            player.respawn(WORLD_WIDTH, WORLD_HEIGHT);
-        }
-        
-        if (player.isAlive()) {
-            handleInput(delta);
-            player.update(delta, WORLD_WIDTH, WORLD_HEIGHT);
-        }
-
-        camera.update();
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeType.Filled);
         shapeRenderer.setColor(Color.RED);
-        for (Bullet bullet : bullets) {
-            shapeRenderer.circle(bullet.getX(), bullet.getY(), bullet.getRadius());
-        }
-        
-        Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-        camera.unproject(mousePos);
+        for (Bullet b : bullets)
+            shapeRenderer.circle(b.getX(), b.getY(), b.getRadius());
 
-        Vector2 playerPos = new Vector2(player.getX(), player.getY());
-        Vector2 dir = new Vector2(mousePos.x, mousePos.y).sub(playerPos).nor();
-        float gunLength = 25f;
-        float gunWidth = 10f;
-
-        Vector2 gunEnd = new Vector2(playerPos).add(new Vector2(dir).scl(gunLength));
-
+        Vector3 mouse = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+        Vector2 dir = new Vector2(mouse.x - player.getX(), mouse.y - player.getY()).nor();
+        float gunLen = PLAYER_RADIUS * 2.25f;
+        float gunWidth = PLAYER_RADIUS;
+        Vector2 gunEnd = new Vector2(player.getX(), player.getY()).add(dir.scl(gunLen));
         shapeRenderer.setColor(Color.GRAY);
-        shapeRenderer.rectLine(playerPos, gunEnd, gunWidth);
-
-        if (player.isAlive()) {
-            shapeRenderer.setColor(Color.WHITE);
-            shapeRenderer.circle(player.getX(), player.getY(), player.getRadius());
-        }
-        
-        if (multiplayer && client != null) {
-            Map<Integer, PlayerData> otherPlayers = client.getOtherPlayers();
-            for (PlayerData otherPlayer : otherPlayers.values()) {
-                if (otherPlayer.alive) {
-                    shapeRenderer.setColor(Color.GREEN);
-                    shapeRenderer.circle(otherPlayer.x, otherPlayer.y, playerRadius);
-                    otherPlayer.update(otherPlayer.x, otherPlayer.y);
-                }
-            }
-        }
-
+        shapeRenderer.rectLine(player.getX(), player.getY(), gunEnd.x, gunEnd.y, gunWidth);
         shapeRenderer.end();
-        
-        game.batch.setProjectionMatrix(camera.combined);
-        game.batch.begin();
 
-        // show health stuff
-        // todo remove?
-        game.font.draw(game.batch, "Health: " + (int)player.getHealth(), 10, WORLD_HEIGHT - 30);
-        
-        if (!player.isAlive()) {
-            String respawnMessage = "You died! Respawning in " + (int)(player.getTimeToRespawn() / 1000 + 1) + "...";
-            game.font.draw(game.batch, respawnMessage, WORLD_WIDTH / 2 - 100, WORLD_HEIGHT / 2);
-        }
-        
-        game.batch.end();
-        
-        if (multiplayer && client != null && player.isAlive()) {
-            client.sendPlayerUpdate(player.getX(), player.getY(), player.getHealth(), player.isAlive());
-        }
+        batch.begin();
+        game.font.draw(batch, "Health: " + (int) player.getHealth(),
+                camera.position.x - WORLD_WIDTH / 2 + 15,
+                camera.position.y + WORLD_HEIGHT / 2 - 20);
+        if (!player.isAlive())
+            game.font.draw(batch,
+                    "Respawning in " + (int) (player.getTimeToRespawn() / 1000 + 1),
+                    camera.position.x - 90, camera.position.y);
+        batch.end();
+
+        if (multiplayer && client != null && player.isAlive())
+            client.sendPlayerUpdate(player.getX(), player.getY(), player.getHealth(), true);
     }
-    
-    private void handleInput(float delta) {
-        playerVelocity.set(0, 0);
-        if (Gdx.input.isKeyPressed(Keys.A)) {
-            playerAccel[0] -= playerSpeed/slideAmount;
-            playerAccel[0] = Math.max(playerAccel[0], -playerSpeed);
-        } else {
-            playerAccel[0] += playerSpeed/slideAmount;
-            playerAccel[0] = Math.min(playerAccel[0], 0);
-        }
-        
-        playerVelocity.x += playerAccel[0];
 
-        if (Gdx.input.isKeyPressed(Keys.D)) {
-            playerAccel[1] += playerSpeed/slideAmount;
-            playerAccel[1] = Math.min(playerAccel[1], playerSpeed);
-        } else {
-            playerAccel[1] -= playerSpeed/slideAmount;
-            playerAccel[1] = Math.max(playerAccel[1], 0);
-        }
+    private void handleInput() {
+        vel.set(0, 0);
+        accel[0] = Gdx.input.isKeyPressed(Keys.A) ? Math.max(accel[0] - speed / slide, -speed)
+                : Math.min(accel[0] + speed / slide, 0);
+        accel[1] = Gdx.input.isKeyPressed(Keys.D) ? Math.min(accel[1] + speed / slide, speed)
+                : Math.max(accel[1] - speed / slide, 0);
+        accel[2] = Gdx.input.isKeyPressed(Keys.S) ? Math.max(accel[2] - speed / slide, -speed)
+                : Math.min(accel[2] + speed / slide, 0);
+        accel[3] = Gdx.input.isKeyPressed(Keys.W) ? Math.min(accel[3] + speed / slide, speed)
+                : Math.max(accel[3] - speed / slide, 0);
+        vel.x = accel[0] + accel[1];
+        vel.y = accel[2] + accel[3];
+        player.setVelocity(vel);
 
-        playerVelocity.x += playerAccel[1];
-
-        if (Gdx.input.isKeyPressed(Keys.S)) {
-            playerAccel[2] -= playerSpeed/slideAmount;
-            playerAccel[2] = Math.max(playerAccel[2], -playerSpeed);
-        } else {
-            playerAccel[2] += playerSpeed/slideAmount;
-            playerAccel[2] = Math.min(playerAccel[2], 0);
-        }
-        
-        playerVelocity.y += playerAccel[2];
-
-        if (Gdx.input.isKeyPressed(Keys.W)) {
-            playerAccel[3] += playerSpeed/slideAmount;
-            playerAccel[3] = Math.min(playerAccel[3], playerSpeed);
-        } else {
-            playerAccel[3] -= playerSpeed/slideAmount;
-            playerAccel[3] = Math.max(playerAccel[3], 0);
-        }
-
-        playerVelocity.y += playerAccel[3];
-
-        player.setVelocity(playerVelocity);
-        
-        // mouse stuff
-        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && TimeUtils.timeSinceMillis(lastShotTime) > shotCooldown) {
-            Vector3 mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(mousePos);
-            float dirX = mousePos.x - player.getX();
-            float dirY = mousePos.y - player.getY();
-            shoot(dirX, dirY);
-            lastShotTime = TimeUtils.millis();
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && TimeUtils.timeSinceMillis(lastShot) > shotCooldown) {
+            Vector3 w = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+            shoot(w.x - player.getX(), w.y - player.getY());
+            lastShot = TimeUtils.millis();
         }
     }
 
-    private void shoot(float dirX, float dirY) {
-        if (!player.isAlive()) return;
-        int ownerId = multiplayer && client != null ? client.getClientId() : 0;
-        bullets.add(new Bullet(player.getX(), player.getY(), dirX, dirY, ownerId));
-        if (multiplayer && client != null) {
-            client.sendBulletShot(player.getX(), player.getY(), dirX, dirY);
+    private void shoot(float dx, float dy) {
+        if (!player.isAlive())
+            return;
+        int owner = (multiplayer && client != null) ? client.getClientId() : 0;
+        bullets.add(new Bullet(player.getX(), player.getY(), dx, dy, owner));
+        if (multiplayer && client != null)
+            client.sendBulletShot(player.getX(), player.getY(), dx, dy);
+    }
+
+    private void updateBullets(float dt) {
+        for (Iterator<Bullet> it = bullets.iterator(); it.hasNext();) {
+            Bullet b = it.next();
+            b.update(dt);
+            if (b.isOutOfBounds(WORLD_WIDTH, WORLD_HEIGHT) || b.isExpired())
+                it.remove();
         }
     }
-    
-    private void updateBullets(float delta) {
-        Iterator<Bullet> iter = bullets.iterator();
-        while (iter.hasNext()) {
-            Bullet bullet = iter.next();
-            bullet.update(delta);
-            if (bullet.isOutOfBounds(WORLD_WIDTH, WORLD_HEIGHT) || bullet.isExpired()) {
-                iter.remove();
-            }
-        }
-    }
-    
+
     private void checkBulletCollisions() {
-        if (!player.isAlive() || client == null) return;
-        Map<Integer, PlayerData> otherPlayers = client.getOtherPlayers();
-        Iterator<Bullet> iter = bullets.iterator();
-        while (iter.hasNext()) {
-            Bullet bullet = iter.next();
-            if (bullet.getOwnerId() != client.getClientId()) {
-                Circle bulletCircle = new Circle(bullet.getX(), bullet.getY(), bullet.getRadius());
-                if (Intersector.overlaps(bulletCircle, player.getHitbox())) {
-                    player.takeDamage(25f);
-                    iter.remove();
-                    continue;
-                }
+        if (!player.isAlive() || client == null)
+            return;
+        Map<Integer, PlayerData> others = client.getOtherPlayers();
+        for (Iterator<Bullet> it = bullets.iterator(); it.hasNext();) {
+            Bullet b = it.next();
+            Circle bc = new Circle(b.getX(), b.getY(), b.getRadius());
+
+            if (b.getOwnerId() != client.getClientId() && Intersector.overlaps(bc, player.getHitbox())) {
+                player.takeDamage(25f);
+                it.remove();
+                continue;
             }
-            
-            // bullet player col
-            if (bullet.getOwnerId() == client.getClientId()) {
-                Circle bulletCircle = new Circle(bullet.getX(), bullet.getY(), bullet.getRadius());
-                for (Map.Entry<Integer, PlayerData> entry : otherPlayers.entrySet()) {
-                    int otherPlayerId = entry.getKey();
-                    PlayerData otherPlayer = entry.getValue();
-                    if (otherPlayer.alive && Intersector.overlaps(bulletCircle, otherPlayer.hitbox)) {
-                        client.sendPlayerHit(otherPlayerId);
-                        iter.remove();
+            if (b.getOwnerId() == client.getClientId()) {
+                for (Map.Entry<Integer, PlayerData> e : others.entrySet()) {
+                    if (e.getValue().alive && Intersector.overlaps(bc, e.getValue().hitbox)) {
+                        client.sendPlayerHit(e.getKey());
+                        it.remove();
                         break;
                     }
                 }
@@ -311,25 +224,30 @@ public class GameScreen implements Screen {
         }
     }
 
-    @Override 
-    public void resize(int width, int height) {
-        viewport.update(width, height, true);
-        camera.position.set(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, 0);
+    @Override
+    public void resize(int w, int h) {
+        viewport.update(w, h, true);
     }
 
-    @Override public void pause() {}
-    @Override public void resume() {}
-    
-    @Override 
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void resume() {
+    }
+
+    @Override
     public void hide() {
         Gdx.input.setInputProcessor(null);
     }
-    
-    @Override 
+
+    @Override
     public void dispose() {
         shapeRenderer.dispose();
-        if (client != null) {
+        map.dispose();
+        player.dispose();
+        if (client != null)
             client.close();
-        }
     }
 }
