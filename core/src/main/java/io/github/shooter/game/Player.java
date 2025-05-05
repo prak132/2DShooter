@@ -32,7 +32,8 @@ public class Player {
     }
 
     public void update(float delta, float screenW, float screenH, Array<Rectangle> obstacles) {
-
+        // Overriding whats already in handleInput() in GameScreen
+        /*
         Vector2 input = new Vector2();
         if (Gdx.input.isKeyPressed(Input.Keys.W)) input.y += 1;
         if (Gdx.input.isKeyPressed(Input.Keys.S)) input.y -= 1;
@@ -41,7 +42,7 @@ public class Player {
 
         if (!input.isZero()) input.nor().scl(speed);
         velocity.set(input);
-
+        */
         Vector2 move = new Vector2(velocity).scl(delta);
         Circle next  = new Circle(hitbox.x + move.x, hitbox.y + move.y, hitbox.radius);
 

@@ -131,16 +131,23 @@ public class GameScreen implements Screen {
         player.render(batch);
         batch.end();
 
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeType.Filled);
-        shapeRenderer.setColor(Color.RED);
-        for (Bullet b : bullets)
-            shapeRenderer.circle(b.getX(), b.getY(), b.getRadius());
 
+        for (Bullet b : bullets) {
+            shapeRenderer.setColor(Color.RED);
+            shapeRenderer.circle(b.getX(), b.getY(), b.getRadius());
+            shapeRenderer.setColor(1, 0, 0, 0.5f);
+            shapeRenderer.circle(b.getX() -  0.01f * b.getVelX(), b.getY() -  0.01f * b.getVelY(), b.getRadius() / 1.1f);
+            shapeRenderer.setColor(1, 0, 0, 0.2f);
+            shapeRenderer.circle(b.getX() -  0.02f * b.getVelX(), b.getY() -  0.02f * b.getVelY(), b.getRadius() / 1.2f);
+        }
         Vector3 mouse = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
         Vector2 dir = new Vector2(mouse.x - player.getX(), mouse.y - player.getY()).nor();
-        float gunLen = PLAYER_RADIUS * 2.25f;
-        float gunWidth = PLAYER_RADIUS;
+        float gunLen = PLAYER_RADIUS * 1.0f;
+        float gunWidth = PLAYER_RADIUS / 2.0f;
         Vector2 gunEnd = new Vector2(player.getX(), player.getY()).add(dir.scl(gunLen));
         shapeRenderer.setColor(Color.GRAY);
         shapeRenderer.rectLine(player.getX(), player.getY(), gunEnd.x, gunEnd.y, gunWidth);

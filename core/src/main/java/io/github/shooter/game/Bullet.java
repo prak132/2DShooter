@@ -46,6 +46,14 @@ public class Bullet {
         return position.y;
     }
     
+    public float getVelX() {
+        return velocity.x;
+    }
+
+    public float getVelY() {
+        return velocity.y;
+    }
+
     public float getRadius() {
         return radius;
     }
