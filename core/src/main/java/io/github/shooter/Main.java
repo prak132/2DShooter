@@ -11,6 +11,7 @@ import io.github.shooter.screens.GameScreen;
 import io.github.shooter.screens.MenuScreen;
 
 public class Main extends Game {
+
     public SpriteBatch batch;
     public BitmapFont font;
     private GameServer server;
@@ -19,10 +20,10 @@ public class Main extends Game {
     public void create() {
         batch = new SpriteBatch();
         font = new BitmapFont();
-        
+
         setScreen(new MenuScreen(this));
     }
-    
+
     public void startGame(boolean multiplayer, boolean hostServer, String serverAddress) {
         if (hostServer) {
             try {
@@ -39,7 +40,7 @@ public class Main extends Game {
                 System.err.println("Error starting server: " + e.getMessage());
             }
         }
-        
+
         setScreen(new GameScreen(this, multiplayer, serverAddress));
     }
 
@@ -55,7 +56,7 @@ public class Main extends Game {
         if (getScreen() != null) {
             getScreen().dispose();
         }
-        
+
         if (server != null) {
             server.stop();
         }
