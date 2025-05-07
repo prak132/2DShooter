@@ -17,6 +17,7 @@ public class SubmachineGun extends Gun {
         
         this.gunColor = Color.LIGHT_GRAY;
         this.gunLength = 1.2f;
+        this.gunMaxLength = 1.2f;
         this.gunThickness = 0.5f;
     }
 }

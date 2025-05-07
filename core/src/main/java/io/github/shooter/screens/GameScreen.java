@@ -206,6 +206,7 @@ public class GameScreen implements Screen {
         // draw gun
         if (player.isAlive()) {
             Gun currentGun = player.getCurrentGun();
+            currentGun.gunRecoil();
             shapeRenderer.setColor(currentGun.getColor());
             float gunLength = PLAYER_RADIUS * currentGun.getLength();
             float gunWidth = PLAYER_RADIUS * currentGun.getThickness();

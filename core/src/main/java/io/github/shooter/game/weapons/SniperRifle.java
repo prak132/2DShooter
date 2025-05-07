@@ -17,6 +17,7 @@ public class SniperRifle extends Gun {
         
         this.gunColor = Color.DARK_GRAY;
         this.gunLength = 2.2f;
+        this.gunMaxLength = 2.2f;
         this.gunThickness = 0.3f;
     }
 }

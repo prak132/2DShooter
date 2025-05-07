@@ -16,6 +16,7 @@ public class AssaultRifle extends Gun {
         
         this.gunColor = Color.GRAY;
         this.gunLength = 1.5f;
+        this.gunMaxLength = 1.5f;
         this.gunThickness = 0.4f;
     }
 }

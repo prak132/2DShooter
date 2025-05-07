@@ -12,6 +12,7 @@ public abstract class Gun {
     protected float bulletSpeed;
     protected float spread; // deg
     protected Color gunColor = Color.GRAY;
+    protected float gunMaxLength = 1.5f;
     protected float gunLength = 1.5f;
     protected float gunThickness = 0.4f;
     
@@ -53,6 +54,7 @@ public abstract class Gun {
         
         currentAmmo--;
         lastShotTime = currentTime;
+        gunLength = gunMaxLength / 1.2f;
         return true;
     }
     
@@ -71,6 +73,10 @@ public abstract class Gun {
                 isReloading = false;
             }
         }
+    }
+
+    public void gunRecoil() {
+        gunLength += (gunMaxLength - gunLength) / 3.0f;
     }
     
     public Color getColor() { return gunColor; }
