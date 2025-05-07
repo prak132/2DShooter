@@ -50,7 +50,7 @@ public class GameScreen implements Screen {
 
     private final Vector2 vel = new Vector2();
     private final float[] accel = {0, 0, 0, 0};
-    private final float speed = 200f, slide = 12f;
+    private final float slide = 12f;
 
     private long lastShot;
 
@@ -134,8 +134,14 @@ public class GameScreen implements Screen {
             mousePosition.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(mousePosition);
             aimDirection.set(mousePosition.x - player.getX(), mousePosition.y - player.getY()).nor();
+            float angleDeg = MathUtils.atan2(aimDirection.y, aimDirection.x) * MathUtils.radiansToDegrees;
+            player.setRotationAngleDeg(angleDeg);
+            player.setSpeed(200f);
 
             if (player.isFiring()) {
+                if (!player.getCurrentGun().isReloading()) {
+                    player.setSpeed(100f);
+                }
                 Vector2 bulletDirection = new Vector2(aimDirection);
                 if (player.fireAt(aimDirection.x, aimDirection.y)) {
                     Gun currentGun = player.getCurrentGun();
@@ -178,8 +184,7 @@ public class GameScreen implements Screen {
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        map.render(batch);
-        player.render(batch);
+        map.render(batch); // draw map
         batch.end();
 
         Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -209,6 +214,11 @@ public class GameScreen implements Screen {
         }
 
         shapeRenderer.end();
+
+        batch.begin();
+        player.render(batch); // draw player
+        batch.end();
+
         batch.begin();
         game.font.draw(batch, "Health: " + (int) player.getHealth(),
                 camera.position.x - viewport.getWorldWidth() / 2 * camera.zoom + 20,
@@ -230,6 +240,7 @@ public class GameScreen implements Screen {
 
     private void handleInput() {
         vel.set(0, 0);
+        float speed = player.getSpeed();
         accel[0] = Gdx.input.isKeyPressed(Keys.A) ? Math.max(accel[0] - speed / slide, -speed)
                 : Math.min(accel[0] + speed / slide, 0);
         accel[1] = Gdx.input.isKeyPressed(Keys.D) ? Math.min(accel[1] + speed / slide, speed)

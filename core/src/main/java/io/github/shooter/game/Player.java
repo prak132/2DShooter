@@ -22,12 +22,14 @@ public class Player {
     private final Circle hitbox;
     private final Vector2 velocity;
     private final Texture texture;
+    private final float maxSpeed = 200f;
 
     private float speed = 200f;
     private float health = 100f;
     private boolean alive = true;
     private long respawnTime = 0;
     private static final long RESPAWN_DELAY = 3000;
+    private float rotationAngleDeg = 0f;
 
     private Array<Gun> guns;
     private int currentGunIndex;
@@ -100,6 +102,7 @@ public class Player {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
             getCurrentGun().reload();
+            speed = maxSpeed;
         }
     }
 
@@ -129,7 +132,17 @@ public class Player {
 
     public void render(SpriteBatch batch) {
         float size = hitbox.radius * 2f;
-        batch.draw(texture, hitbox.x - hitbox.radius, hitbox.y - hitbox.radius, size, size);
+        batch.draw(
+            texture,
+            hitbox.x - hitbox.radius, hitbox.y - hitbox.radius,
+            hitbox.radius, hitbox.radius,
+            size, size,
+            1f, 1f,
+            rotationAngleDeg + 90f,
+            0, 0,
+            texture.getWidth(), texture.getHeight(),
+            false, false
+        );
     }
 
     public void renderGunInfo(SpriteBatch batch, BitmapFont font, float x, float y) {
@@ -203,5 +216,17 @@ public class Player {
 
     public void dispose() {
         texture.dispose();
+    }
+
+    public void setRotationAngleDeg(float angle) {
+        this.rotationAngleDeg = angle;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(float spd) {
+        this.speed = spd;
     }
 }
