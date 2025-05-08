@@ -2,6 +2,7 @@ package io.github.shooter.screens;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -110,7 +111,12 @@ public class GameScreen implements Screen {
         try {
             client = new GameClient(serverAddress, true);
             ClientListener l = new ClientListener(client);
-            l.setBulletListener((id, x, y, dx, dy) -> bullets.add(new Bullet(x, y, dx, dy, id)));
+            l.setBulletListener((id, x, y, dx, dy, damage) -> {
+                Bullet bullet = new Bullet(x, y, dx, dy, id);
+                bullet.setDamage(damage);
+                bullet.setRadius(Math.min(5f + (damage / 10f), 10f));
+                bullets.add(bullet);
+            });
             l.setPlayerHitListener((src, dmg) -> player.takeDamage(dmg));
             client.getClient().addListener(l);
         } catch (IOException e) {
@@ -120,12 +126,26 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float dt) {
+        if (multiplayer && client != null) {
+            client.initializeEnemyTextures();
+        }
+        
         updateBullets(dt);
         if (multiplayer) {
             checkBulletCollisions();
         }
         if (!player.isAlive() && player.shouldRespawn()) {
-            player.respawn(WORLD_WIDTH, WORLD_HEIGHT);
+            if (multiplayer && client != null) {
+                Map<Integer, Circle> otherPlayersHitboxes = new HashMap<>();
+                for (Map.Entry<Integer, PlayerData> entry : client.getOtherPlayers().entrySet()) {
+                    if (entry.getValue().alive) {
+                        otherPlayersHitboxes.put(entry.getKey(), entry.getValue().hitbox);
+                    }
+                }
+                player.respawn(WORLD_WIDTH, WORLD_HEIGHT, otherPlayersHitboxes);
+            } else {
+                player.respawn(WORLD_WIDTH, WORLD_HEIGHT);
+            }
         }
 
         if (player.isAlive()) {
@@ -170,7 +190,8 @@ public class GameScreen implements Screen {
                     if (multiplayer && client != null) {
                         client.sendBulletShot(player.getX(), player.getY(),
                                 bulletDirection.x * speed,
-                                bulletDirection.y * speed);
+                                bulletDirection.y * speed,
+                                damage);
                     }
                 }
             }
@@ -203,8 +224,6 @@ public class GameScreen implements Screen {
             shapeRenderer.setColor(1f, 0.7f, 0f, 0.3f);
             shapeRenderer.circle(b.getX() - 0.02f * b.getVelX(), b.getY() - 0.02f * b.getVelY(), b.getRadius() * 0.6f);
         }
-
-        // draw gun
         if (player.isAlive()) {
             Gun currentGun = player.getCurrentGun();
             currentGun.gunRecoil();
@@ -215,10 +234,29 @@ public class GameScreen implements Screen {
             shapeRenderer.rectLine(player.getX(), player.getY(), gunEnd.x, gunEnd.y, gunWidth);
         }
 
+        if (multiplayer && client != null) {
+            for (PlayerData otherPlayer : client.getOtherPlayers().values()) {
+                if (otherPlayer.alive) {
+                    float enemyAngle = otherPlayer.rotation * MathUtils.degreesToRadians;
+                    Vector2 enemyDirection = new Vector2(MathUtils.cos(enemyAngle), MathUtils.sin(enemyAngle));
+                    Vector2 gunEnd = new Vector2(otherPlayer.x, otherPlayer.y).add(
+                            new Vector2(enemyDirection).scl(PLAYER_RADIUS * 1.5f));
+                    shapeRenderer.setColor(0.7f, 0.7f, 0.7f, 1f); // everything grey TODO: Change color based off weapon they are using
+                    shapeRenderer.rectLine(otherPlayer.x, otherPlayer.y, gunEnd.x, gunEnd.y, PLAYER_RADIUS * 0.3f);
+                }
+            }
+        }
+
         shapeRenderer.end();
 
         batch.begin();
-        player.render(batch); // draw player
+        player.render(batch);
+        if (multiplayer && client != null) {
+            for (PlayerData otherPlayer : client.getOtherPlayers().values()) {
+                otherPlayer.enemyPlayer.render(batch);
+            }
+        }
+        
         batch.end();
 
         batch.begin();
@@ -236,7 +274,7 @@ public class GameScreen implements Screen {
         batch.end();
 
         if (multiplayer && client != null && player.isAlive()) {
-            client.sendPlayerUpdate(player.getX(), player.getY(), player.getHealth(), true);
+            client.sendPlayerUpdate(player.getX(), player.getY(), player.getHealth(), true, player.getRotationAngleDeg());
         }
     }
 
@@ -260,19 +298,15 @@ public class GameScreen implements Screen {
         for (Iterator<Bullet> it = bullets.iterator(); it.hasNext();) {
             Bullet b = it.next();
             b.update(dt);
-    
-            // remove if out of bounds or expired
             if (b.isOutOfBounds(WORLD_WIDTH, WORLD_HEIGHT) || b.isExpired()) {
                 it.remove();
                 continue;
             }
-    
-            // collision with map obstacles
             Circle bc = new Circle(b.getX(), b.getY(), b.getRadius());
             for (Rectangle r : map.getObstacles()) {
                 if (Intersector.overlaps(bc, r)) {
-                    b.stop();      // <-- bullet freezes
-                    it.remove();   // remove from list; delete this line if you want it to stay visible
+                    b.stop();
+                    it.remove();
                     break;
                 }
             }
@@ -287,17 +321,23 @@ public class GameScreen implements Screen {
         Map<Integer, PlayerData> others = client.getOtherPlayers();
         for (Iterator<Bullet> it = bullets.iterator(); it.hasNext();) {
             Bullet b = it.next();
+            if (b.isStopped()) {
+                continue;
+            }
+            
             Circle bc = new Circle(b.getX(), b.getY(), b.getRadius());
-
             if (b.getOwnerId() != client.getClientId() && Intersector.overlaps(bc, player.getHitbox())) {
                 player.takeDamage(b.getDamage());
+                b.stop();
                 it.remove();
                 continue;
             }
+            
             if (b.getOwnerId() == client.getClientId()) {
                 for (Map.Entry<Integer, PlayerData> e : others.entrySet()) {
                     if (e.getValue().alive && Intersector.overlaps(bc, e.getValue().hitbox)) {
-                        client.sendPlayerHit(e.getKey());
+                        client.sendPlayerHit(e.getKey(), b.getDamage());
+                        b.stop();
                         it.remove();
                         break;
                     }

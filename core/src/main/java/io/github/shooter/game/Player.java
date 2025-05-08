@@ -1,5 +1,7 @@
 package io.github.shooter.game;
 
+import java.util.Map;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
@@ -22,10 +24,10 @@ public class Player {
     private final Circle hitbox;
     private final Vector2 velocity;
     private final Texture texture;
-    private final float maxSpeed = 200f;
+    private final float maxSpeed = 150f;
 
-    private float speed = 200f;
-    private float health = 100f;
+    private float speed = 150f;
+    private float health = 200f;
     private boolean alive = true;
     private long respawnTime = 0;
     private static final long RESPAWN_DELAY = 3000;
@@ -35,12 +37,15 @@ public class Player {
     private int currentGunIndex;
     private boolean isFiring;
 
+    private static final float MIN_SPAWN_DISTANCE = 300f;
+    private static final int MAX_RESPAWN_ATTEMPTS = 20;
+
     public Player(float x, float y, float radius) {
         hitbox = new Circle(x, y, radius);
         velocity = new Vector2();
         texture = new Texture("Player1.png");
         texture.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
-
+        
         guns = new Array<>();
         guns.add(GunFactory.createGun(GunType.ASSAULT_RIFLE));
         guns.add(GunFactory.createGun(GunType.SNIPER_RIFLE));
@@ -51,10 +56,9 @@ public class Player {
 
     public void update(float delta, float screenW, float screenH, Array<Rectangle> obstacles) {
         getCurrentGun().update();
-
+        
         Vector2 move = new Vector2(velocity).scl(delta);
-
-        // Move X first
+        
         hitbox.x += move.x;
         for (Rectangle r : obstacles) {
             if (Intersector.overlaps(hitbox, r)) {
@@ -66,8 +70,7 @@ public class Player {
                 break;
             }
         }
-
-        // Move Y next
+        
         hitbox.y += move.y;
         for (Rectangle r : obstacles) {
             if (Intersector.overlaps(hitbox, r)) {
@@ -80,7 +83,6 @@ public class Player {
             }
         }
 
-        // Clamp to map bounds
         if (hitbox.x - hitbox.radius < 0) hitbox.x = hitbox.radius;
         if (hitbox.x + hitbox.radius > screenW) hitbox.x = screenW - hitbox.radius;
         if (hitbox.y - hitbox.radius < 0) hitbox.y = hitbox.radius;
@@ -149,15 +151,48 @@ public class Player {
         }
     }
 
-    public boolean shouldRespawn() {
-        return !alive && TimeUtils.millis() > respawnTime;
-    }
-
-    public void respawn(float w, float h) {
+    public void respawn(float w, float h, Map<Integer, ?> otherPlayers) {
         alive = true;
-        health = 100;
+        health = 200f;
+        
+        if (otherPlayers == null || otherPlayers.isEmpty()) {
+            hitbox.x = 100 + (float) Math.random() * (w - 200);
+            hitbox.y = 100 + (float) Math.random() * (h - 200);
+            return;
+        }
+        
+        for (int attempt = 0; attempt < MAX_RESPAWN_ATTEMPTS; attempt++) {
+            float x = 100 + (float) Math.random() * (w - 200);
+            float y = 100 + (float) Math.random() * (h - 200);
+            boolean positionIsGood = true;
+            for (Object playerObj : otherPlayers.values()) {
+                if (playerObj instanceof Circle) {
+                    Circle otherHitbox = (Circle) playerObj;
+                    float distance = Vector2.dst(x, y, otherHitbox.x, otherHitbox.y);
+                    if (distance < MIN_SPAWN_DISTANCE) {
+                        positionIsGood = false;
+                        break;
+                    }
+                }
+            }
+            
+            if (positionIsGood) {
+                hitbox.x = x;
+                hitbox.y = y;
+                return;
+            }
+        }
+        
         hitbox.x = 100 + (float) Math.random() * (w - 200);
         hitbox.y = 100 + (float) Math.random() * (h - 200);
+    }
+    
+    public void respawn(float w, float h) {
+        respawn(w, h, null);
+    }
+
+    public boolean shouldRespawn() {
+        return !alive && TimeUtils.millis() > respawnTime;
     }
 
     public void setVelocity(Vector2 v) {
@@ -202,6 +237,10 @@ public class Player {
 
     public void setRotationAngleDeg(float angle) {
         this.rotationAngleDeg = angle;
+    }
+
+    public float getRotationAngleDeg() {
+        return rotationAngleDeg;
     }
 
     public float getSpeed() {

@@ -6,11 +6,11 @@ public class AssaultRifle extends Gun {
     public AssaultRifle() {
         super(
             "Assault Rifle",
-            10.0f,
+            6.0f,
             8.0f,
             30,
             2.0f,
-            600.0f,
+            300.0f,
             3.0f
         );
         

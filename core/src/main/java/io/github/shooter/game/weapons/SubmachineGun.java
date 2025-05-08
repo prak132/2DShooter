@@ -7,11 +7,11 @@ public class SubmachineGun extends Gun {
     public SubmachineGun() {
         super(
             "Submachine Gun",
-            5.0f,
-            15.0f,
+            2.5f,
+            10.0f,
             45,
             1.5f,
-            500.0f,
+            400.0f,
             6.0f
         );
         

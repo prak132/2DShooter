@@ -13,14 +13,13 @@ public class Bullet {
     private final long creationTime;
     private final int  ownerId;
 
-    private float damage    = 25f;   // default dmg
-    private long  lifetime  = 1000;  // ms
+    private float damage    = 25f;
+    private long  lifetime  = 1000;
 
-    private boolean stopped = false; // new
+    private boolean stopped = false;
 
     public Bullet(float x, float y, float dirX, float dirY, int ownerId) {
         position = new Vector2(x, y);
-        // if caller already provided a velocity vector (dx,dy)
         if (Math.abs(dirX) > 10 || Math.abs(dirY) > 10) {
             velocity = new Vector2(dirX, dirY);
             speed = velocity.len();
@@ -31,20 +30,17 @@ public class Bullet {
         this.ownerId = ownerId;
     }
 
-    /* ----------------------------------------------------------- */
     public void update(float delta) {
-        if (stopped) return;                       // no movement if stopped
+        if (stopped) return;
         position.x += velocity.x * delta;
         position.y += velocity.y * delta;
     }
 
-    /** Stop the bullet in place (zero velocity). */
     public void stop() {
         velocity.setZero();
         stopped = true;
     }
 
-    /* ----------------------------------------------------------- */
     public boolean isOutOfBounds(float w, float h) {
         return position.x < -radius || position.x > w + radius ||
                position.y < -radius || position.y > h + radius;
@@ -53,7 +49,6 @@ public class Bullet {
         return TimeUtils.timeSinceMillis(creationTime) > lifetime;
     }
 
-    /* getters / setters ----------------------------------------- */
     public void   setDamage(float d)     { damage = d; }
     public float  getDamage()            { return damage; }
     public void   setLifetime(long ms)   { lifetime = ms; }

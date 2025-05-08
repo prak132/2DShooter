@@ -7,6 +7,7 @@ import java.util.Map;
 import com.badlogic.gdx.math.Circle;
 import com.esotericsoftware.kryonet.Client;
 
+import io.github.shooter.game.EnemyPlayer;
 import io.github.shooter.multiplayer.Network.BulletUpdate;
 import io.github.shooter.multiplayer.Network.PlayerHit;
 import io.github.shooter.multiplayer.Network.PlayerUpdate;
@@ -16,6 +17,7 @@ public class GameClient {
     private int clientId;
     
     private Map<Integer, PlayerData> otherPlayers = new HashMap<>();
+    private static final float PLAYER_RADIUS = 16f;
 
     public GameClient(String serverAddress) throws IOException {
         this(serverAddress, true);
@@ -60,45 +62,51 @@ public class GameClient {
         return client;
     }
 
-    public void sendPlayerUpdate(float x, float y, float health, boolean alive) {
+    public void sendPlayerUpdate(float x, float y, float health, boolean alive, float rotation) {
         PlayerUpdate update = new PlayerUpdate();
         update.id = clientId;
         update.x = x;
         update.y = y;
         update.health = health;
         update.alive = alive;
+        update.rotation = rotation;
         client.sendTCP(update);
     }
     
-    public void sendBulletShot(float x, float y, float dirX, float dirY) {
+    public void sendBulletShot(float x, float y, float dirX, float dirY, float damage) {
         BulletUpdate update = new BulletUpdate();
         update.playerId = clientId;
         update.x = x;
         update.y = y;
         update.dirX = dirX;
         update.dirY = dirY;
+        update.damage = damage;
         client.sendTCP(update);
     }
     
-    public void sendPlayerHit(int targetId) {
+    public void sendPlayerHit(int targetId, float damage) {
         PlayerHit hit = new PlayerHit();
         hit.sourceId = clientId;
         hit.targetId = targetId;
+        hit.damage = damage;
         client.sendTCP(hit);
     }
     
-    public void updateOtherPlayer(int playerId, float x, float y, float health, boolean alive) {
+    public void updateOtherPlayer(int playerId, float x, float y, float health, boolean alive, float rotation) {
         if (playerId != clientId) {
             PlayerData data = otherPlayers.get(playerId);
             if (data == null) {
-                data = new PlayerData(x, y);
+                data = new PlayerData(playerId, x, y);
                 otherPlayers.put(playerId, data);
             } else {
-                data.x = x;
-                data.y = y;
-                data.health = health;
-                data.alive = alive;
+                data.update(x, y, health, alive, rotation);
             }
+        }
+    }
+    
+    public void initializeEnemyTextures() {
+        for (PlayerData data : otherPlayers.values()) {
+            data.enemyPlayer.initializeTexture();
         }
     }
     
@@ -106,28 +114,44 @@ public class GameClient {
         return otherPlayers;
     }
     
+    public void disposeAllEnemyPlayers() {
+        EnemyPlayer.disposeTexture();
+        otherPlayers.clear();
+    }
+    
     public void close() {
+        disposeAllEnemyPlayers();
         if (client != null) {
             client.close();
         }
     }
     
     public static class PlayerData {
+        public int id;
         public float x, y;
         public float health = 100f;
         public boolean alive = true;
+        public float rotation = 0f;
         public Circle hitbox;
+        public EnemyPlayer enemyPlayer;
         
-        public PlayerData(float x, float y) {
+        public PlayerData(int id, float x, float y) {
+            this.id = id;
             this.x = x;
             this.y = y;
-            this.hitbox = new Circle(x, y, 15f);
+            this.hitbox = new Circle(x, y, PLAYER_RADIUS);
+            this.enemyPlayer = new EnemyPlayer(x, y, PLAYER_RADIUS);
         }
         
-        public void update(float x, float y) {
+        public void update(float x, float y, float health, boolean alive, float rotation) {
             this.x = x;
             this.y = y;
+            this.health = health;
+            this.alive = alive;
+            this.rotation = rotation;
             this.hitbox.setPosition(x, y);
+            this.enemyPlayer.update(x, y, health, alive);
+            this.enemyPlayer.setRotationAngleDeg(rotation);
         }
     }
 }

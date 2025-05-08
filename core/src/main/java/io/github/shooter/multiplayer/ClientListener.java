@@ -29,12 +29,12 @@ public class ClientListener extends Listener {
     public void received(Connection connection, Object object) {
         if (object instanceof PlayerUpdate) {
             PlayerUpdate update = (PlayerUpdate) object;
-            gameClient.updateOtherPlayer(update.id, update.x, update.y, update.health, update.alive);
+            gameClient.updateOtherPlayer(update.id, update.x, update.y, update.health, update.alive, update.rotation);
         }
         else if (object instanceof BulletUpdate) {
             BulletUpdate update = (BulletUpdate) object;
             if (update.playerId != gameClient.getClientId() && bulletListener != null) {
-                bulletListener.onBulletFired(update.playerId, update.x, update.y, update.dirX, update.dirY);
+                bulletListener.onBulletFired(update.playerId, update.x, update.y, update.dirX, update.dirY, update.damage);
             }
         }
         else if (object instanceof PlayerHit) {
@@ -46,7 +46,7 @@ public class ClientListener extends Listener {
     }
     
     public interface BulletListener {
-        void onBulletFired(int playerId, float x, float y, float dirX, float dirY);
+        void onBulletFired(int playerId, float x, float y, float dirX, float dirY, float damage);
     }
     
     public interface PlayerHitListener {

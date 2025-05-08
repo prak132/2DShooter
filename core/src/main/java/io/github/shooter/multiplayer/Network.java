@@ -10,12 +10,14 @@ public class Network {
         public float x, y;
         public boolean alive = true;
         public float health = 100f;
+        public float rotation = 0f;
     }
     
     public static class BulletUpdate {
         public int playerId;
         public float x, y;
         public float dirX, dirY;
+        public float damage = 25f;
     }
     
     public static class PlayerHit {

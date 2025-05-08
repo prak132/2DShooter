@@ -7,7 +7,7 @@ public class SniperRifle extends Gun {
     public SniperRifle() {
         super(
             "Sniper Rifle",
-            50.0f,
+            20.0f,
             1.0f,
             5,
             3.0f,
