@@ -53,53 +53,46 @@ public class Player {
         getCurrentGun().update();
 
         Vector2 move = new Vector2(velocity).scl(delta);
-        Circle next = new Circle(hitbox.x + move.x, hitbox.y + move.y, hitbox.radius);
 
-        boolean block = false;
+        // Move X first
+        hitbox.x += move.x;
         for (Rectangle r : obstacles) {
-            if (Intersector.overlaps(next, r)) {
-                block = true;
+            if (Intersector.overlaps(hitbox, r)) {
+                if (move.x > 0) {
+                    hitbox.x = r.x - hitbox.radius;
+                } else if (move.x < 0) {
+                    hitbox.x = r.x + r.width + hitbox.radius;
+                }
                 break;
             }
         }
 
-        if (!block) {
-            hitbox.x += move.x;
-            hitbox.y += move.y;
+        // Move Y next
+        hitbox.y += move.y;
+        for (Rectangle r : obstacles) {
+            if (Intersector.overlaps(hitbox, r)) {
+                if (move.y > 0) {
+                    hitbox.y = r.y - hitbox.radius;
+                } else if (move.y < 0) {
+                    hitbox.y = r.y + r.height + hitbox.radius;
+                }
+                break;
+            }
         }
 
-        if (hitbox.x - hitbox.radius < 0) {
-            hitbox.x = hitbox.radius;
-        }
-        if (hitbox.x + hitbox.radius > screenW) {
-            hitbox.x = screenW - hitbox.radius;
-        }
-        if (hitbox.y - hitbox.radius < 0) {
-            hitbox.y = hitbox.radius;
-        }
-        if (hitbox.y + hitbox.radius > screenH) {
-            hitbox.y = screenH - hitbox.radius;
-        }
+        // Clamp to map bounds
+        if (hitbox.x - hitbox.radius < 0) hitbox.x = hitbox.radius;
+        if (hitbox.x + hitbox.radius > screenW) hitbox.x = screenW - hitbox.radius;
+        if (hitbox.y - hitbox.radius < 0) hitbox.y = hitbox.radius;
+        if (hitbox.y + hitbox.radius > screenH) hitbox.y = screenH - hitbox.radius;
     }
 
     public void handleGunInput() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
-            switchToGun(0);
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
-            switchToGun(1);
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
-            switchToGun(2);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
-            switchToGun((currentGunIndex + 1) % guns.size);
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
-            switchToGun((currentGunIndex - 1 + guns.size) % guns.size);
-        }
-
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) switchToGun(0);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) switchToGun(1);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) switchToGun(2);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) switchToGun((currentGunIndex + 1) % guns.size);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) switchToGun((currentGunIndex - 1 + guns.size) % guns.size);
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
             getCurrentGun().reload();
             speed = maxSpeed;
@@ -107,23 +100,17 @@ public class Player {
     }
 
     public boolean attemptToFire() {
-        if (!alive) {
-            return false;
-        }
+        if (!alive) return false;
         return getCurrentGun().fire();
     }
 
     public boolean fireAt(float dirX, float dirY) {
-        if (!alive) {
-            return false;
-        }
+        if (!alive) return false;
         return attemptToFire();
     }
 
     public void switchToGun(int index) {
-        if (index >= 0 && index < guns.size) {
-            currentGunIndex = index;
-        }
+        if (index >= 0 && index < guns.size) currentGunIndex = index;
     }
 
     public Gun getCurrentGun() {
@@ -132,34 +119,29 @@ public class Player {
 
     public void render(SpriteBatch batch) {
         float size = hitbox.radius * 2f;
-        batch.draw(
-            texture,
-            hitbox.x - hitbox.radius, hitbox.y - hitbox.radius,
-            hitbox.radius, hitbox.radius,
-            size, size,
-            1f, 1f,
-            rotationAngleDeg + 90f,
-            0, 0,
-            texture.getWidth(), texture.getHeight(),
-            false, false
+        batch.draw(texture,
+                hitbox.x - hitbox.radius, hitbox.y - hitbox.radius,
+                hitbox.radius, hitbox.radius,
+                size, size,
+                1f, 1f,
+                rotationAngleDeg + 90f,
+                0, 0,
+                texture.getWidth(), texture.getHeight(),
+                false, false
         );
     }
 
     public void renderGunInfo(SpriteBatch batch, BitmapFont font, float x, float y) {
         Gun gun = getCurrentGun();
         String statusText = "";
-
         if (gun.isReloading()) {
             statusText += " (Reloading: " + String.format("%.1f", gun.getReloadTimeRemaining()) + "s)";
         }
-
         font.draw(batch, statusText, x, y);
     }
 
     public void takeDamage(float dmg) {
-        if (!alive) {
-            return;
-        }
+        if (!alive) return;
         if ((health -= dmg) <= 0) {
             health = 0;
             alive = false;

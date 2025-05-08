@@ -35,8 +35,8 @@ import io.github.shooter.multiplayer.GameClient.PlayerData;
 // TODO: Seperate code out into different classes to make this file more readable
 public class GameScreen implements Screen {
 
-    private static final float WORLD_WIDTH = 2000, WORLD_HEIGHT = 2000;
-    private static final float PLAYER_RADIUS = 40f;
+    private static final float WORLD_WIDTH = 1312, WORLD_HEIGHT = 1232;
+    private static final float PLAYER_RADIUS = 16f;
 
     private final Main game;
     private final OrthographicCamera camera;
@@ -50,7 +50,7 @@ public class GameScreen implements Screen {
 
     private final Vector2 vel = new Vector2();
     private final float[] accel = {0, 0, 0, 0};
-    private final float slide = 12f;
+    private final float slide = 20f;
 
     private long lastShot;
 
@@ -69,7 +69,7 @@ public class GameScreen implements Screen {
         this.serverAddress = (serverAddress == null || serverAddress.isEmpty()) ? "localhost" : serverAddress;
 
         camera = new OrthographicCamera();
-        camera.zoom = 0.2f;
+        camera.zoom = 0.30f;
         viewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
         viewport.apply();
 
