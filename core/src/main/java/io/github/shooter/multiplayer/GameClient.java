@@ -34,16 +34,37 @@ public class GameClient {
         client.start();
         
         try {
-            // funny issue I found
-            if (serverAddress.endsWith(".255")) {
-                throw new IOException("Cannot connect to broadcast address: " + serverAddress);
+            String host = serverAddress;
+            int port = Network.port;
+            // ngrok for port forwarding
+            if (host.contains(":")) {
+                String[] parts = host.split(":");
+                host = parts[0];
+                try {
+                    port = Integer.parseInt(parts[1]);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid port in URL, using default port " + Network.port);
+                }
             }
             
-            client.connect(5000, serverAddress, Network.port);
+            if (host.contains("/")) {
+                host = host.split("/")[0];
+            }
+            
+            // funny issue I found
+            if (host.endsWith(".255")) {
+                throw new IOException("Cannot connect to broadcast address: " + host);
+            }
+            
+            if (showMessages) {
+                System.out.println("Connecting to host: " + host + " on port: " + port);
+            }
+            
+            client.connect(5000, host, port);
             clientId = client.getID();
             
             if (showMessages) {
-                System.out.println("Connected to server at " + serverAddress + " with ID: " + clientId);
+                System.out.println("Connected to server at " + host + " with ID: " + clientId);
             }
         } catch (IOException e) {
             System.err.println("Connection failed: " + e.getMessage());

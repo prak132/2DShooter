@@ -68,8 +68,7 @@ public class IPInputScreen implements Screen {
         Label titleLabel = new Label("Enter Server IP Address", skin);
         titleLabel.setAlignment(Align.center);
         
-        // default ip addres for testing at home
-        ipField = new TextField("127.0.2.2", skin);
+        ipField = new TextField("127.0.0.1", skin);
         ipField.setAlignment(Align.center);
         
         TextButton connectButton = new TextButton("Connect", skin);
