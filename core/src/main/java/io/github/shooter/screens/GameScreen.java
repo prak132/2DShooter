@@ -18,6 +18,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -259,11 +260,25 @@ public class GameScreen implements Screen {
         for (Iterator<Bullet> it = bullets.iterator(); it.hasNext();) {
             Bullet b = it.next();
             b.update(dt);
+    
+            // remove if out of bounds or expired
             if (b.isOutOfBounds(WORLD_WIDTH, WORLD_HEIGHT) || b.isExpired()) {
                 it.remove();
+                continue;
+            }
+    
+            // collision with map obstacles
+            Circle bc = new Circle(b.getX(), b.getY(), b.getRadius());
+            for (Rectangle r : map.getObstacles()) {
+                if (Intersector.overlaps(bc, r)) {
+                    b.stop();      // <-- bullet freezes
+                    it.remove();   // remove from list; delete this line if you want it to stay visible
+                    break;
+                }
             }
         }
     }
+    
 
     private void checkBulletCollisions() {
         if (!player.isAlive() || client == null) {
