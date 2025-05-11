@@ -291,6 +291,11 @@ public class GameScreen implements Screen {
                 : Math.max(accel[3] - speed / slide, 0);
         vel.x = accel[0] + accel[1];
         vel.y = accel[2] + accel[3];
+        
+        if (vel.x != 0 && vel.y != 0) {
+            vel.nor().scl(speed);
+        }
+        
         player.setVelocity(vel);
     }
 

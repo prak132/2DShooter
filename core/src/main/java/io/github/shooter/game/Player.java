@@ -24,9 +24,9 @@ public class Player {
     private final Circle hitbox;
     private final Vector2 velocity;
     private final Texture texture;
-    private final float maxSpeed = 150f;
+    private final float maxSpeed = 125f;
 
-    private float speed = 150f;
+    private float speed = 125f;
     private float health = 200f;
     private boolean alive = true;
     private long respawnTime = 0;
