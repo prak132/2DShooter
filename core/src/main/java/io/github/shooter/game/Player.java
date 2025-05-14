@@ -120,6 +120,8 @@ public class Player {
     }
 
     public void render(SpriteBatch batch) {
+        if (!alive) return;
+        
         float size = hitbox.radius * 2f;
         batch.draw(texture,
                 hitbox.x - hitbox.radius, hitbox.y - hitbox.radius,
@@ -137,8 +139,9 @@ public class Player {
         Gun gun = getCurrentGun();
         String statusText = "";
         if (gun.isReloading()) {
-            statusText += " (Reloading: " + String.format("%.1f", gun.getReloadTimeRemaining()) + "s)";
+            statusText += " Reloading: " + String.format("%.1f", gun.getReloadTimeRemaining()) + "s";
         }
+        font.getData().setScale(2.5f);
         font.draw(batch, statusText, x, y);
     }
 

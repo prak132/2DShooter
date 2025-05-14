@@ -5,10 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.esotericsoftware.kryonet.Client;
 
 import io.github.shooter.game.EnemyPlayer;
 import io.github.shooter.multiplayer.Network.BulletUpdate;
+import io.github.shooter.multiplayer.Network.PingRequest;
 import io.github.shooter.multiplayer.Network.PlayerHit;
 import io.github.shooter.multiplayer.Network.PlayerUpdate;
 
@@ -18,6 +20,10 @@ public class GameClient {
     
     private Map<Integer, PlayerData> otherPlayers = new HashMap<>();
     private static final float PLAYER_RADIUS = 16f;
+    
+    private long lastPingSent;
+    private long currentPing = 0;
+    private static final long PING_INTERVAL = 1000;
 
     public GameClient(String serverAddress) throws IOException {
         this(serverAddress, true);
@@ -135,6 +141,13 @@ public class GameClient {
         return otherPlayers;
     }
     
+    public void removePlayer(int playerId) {
+        if (otherPlayers.containsKey(playerId)) {
+            otherPlayers.remove(playerId);
+            System.out.println("Player " + playerId + " has been removed from the game.");
+        }
+    }
+    
     public void disposeAllEnemyPlayers() {
         EnemyPlayer.disposeTexture();
         otherPlayers.clear();
@@ -145,6 +158,30 @@ public class GameClient {
         if (client != null) {
             client.close();
         }
+    }
+    
+    public void updatePing() {
+        if (client != null && client.isConnected()) {
+            long currentTime = TimeUtils.millis();
+            if (currentTime - lastPingSent > PING_INTERVAL) {
+                PingRequest request = new PingRequest();
+                request.timestamp = currentTime;
+                client.sendTCP(request);
+                lastPingSent = currentTime;
+            }
+        }
+    }
+    
+    public void receivePingResponse(long timestamp) {
+        currentPing = TimeUtils.millis() - timestamp;
+    }
+    
+    public long getPing() {
+        return currentPing;
+    }
+    
+    public void setCurrentPing(long currentPing) {
+        this.currentPing = currentPing;
     }
     
     public static class PlayerData {

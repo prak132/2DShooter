@@ -43,6 +43,10 @@ public class GameScreen implements Screen {
     private final Main game;
     private final OrthographicCamera camera;
     private final Viewport viewport;
+    
+    private final OrthographicCamera uiCamera;
+    private final Viewport uiViewport;
+    
     private final ShapeRenderer shapeRenderer;
     private final SpriteBatch batch;
 
@@ -74,6 +78,10 @@ public class GameScreen implements Screen {
         camera.zoom = 0.30f;
         viewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
         viewport.apply();
+
+        uiCamera = new OrthographicCamera();
+        uiViewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, uiCamera);
+        uiViewport.apply();
 
         shapeRenderer = new ShapeRenderer();
         batch = game.batch;
@@ -259,22 +267,43 @@ public class GameScreen implements Screen {
         
         batch.end();
 
+        uiCamera.update();
+        batch.setProjectionMatrix(uiCamera.combined);
         batch.begin();
-        game.font.draw(batch, "Health: " + (int) player.getHealth(),
-                camera.position.x - viewport.getWorldWidth() / 2 * camera.zoom + 20,
-                camera.position.y + viewport.getWorldHeight() / 2 * camera.zoom - 20);
+        
+        String healthText = "Health: " + (int) player.getHealth();
+        batch.setColor(1, 1, 1, 1);
+        game.font.getData().setScale(2.5f);
+        game.font.draw(batch, healthText, 50, WORLD_HEIGHT - 40);
 
-        player.renderGunInfo(batch, game.font, player.getX(), player.getY());
+        if (multiplayer && client != null) {
+            client.updatePing();
+            String pingText = "Ping: " + client.getPing() + " ms";
+            float textWidth = game.font.getData().spaceXadvance * pingText.length() * 1.2f;
+            game.font.draw(batch, pingText, WORLD_WIDTH - textWidth - 120, WORLD_HEIGHT - 40);
+        }
+        
+        game.font.getData().setScale(1.0f);
+
+        Vector3 playerScreenPos = new Vector3(player.getX(), player.getY(), 0);
+        camera.project(playerScreenPos);
+        uiCamera.unproject(playerScreenPos);
+        player.renderGunInfo(batch, game.font, playerScreenPos.x + 40, playerScreenPos.y - 40);
 
         if (!player.isAlive()) {
-            game.font.draw(batch,
-                    "Respawning in " + (int) (player.getTimeToRespawn() / 1000 + 1),
-                    camera.position.x - 90, camera.position.y);
+            String respawnText = "Respawning in " + (int) (player.getTimeToRespawn() / 1000 + 1);
+            float textWidth = game.font.getRegion().getRegionWidth() * respawnText.length() * 0.5f;
+            game.font.draw(batch, respawnText,
+                    WORLD_WIDTH / 2 - textWidth / 2, WORLD_HEIGHT / 2);
         }
         batch.end();
 
-        if (multiplayer && client != null && player.isAlive()) {
-            client.sendPlayerUpdate(player.getX(), player.getY(), player.getHealth(), true, player.getRotationAngleDeg());
+        if (multiplayer && client != null) {
+            if (player.isAlive()) {
+                client.sendPlayerUpdate(player.getX(), player.getY(), player.getHealth(), true, player.getRotationAngleDeg());
+            } else {
+                client.sendPlayerUpdate(player.getX(), player.getY(), 0, false, player.getRotationAngleDeg());
+            }
         }
     }
 
@@ -354,6 +383,7 @@ public class GameScreen implements Screen {
     @Override
     public void resize(int w, int h) {
         viewport.update(w, h, true);
+        uiViewport.update(w, h, true);
     }
 
     @Override

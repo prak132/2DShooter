@@ -25,10 +25,25 @@ public class Network {
         public int sourceId;
         public float damage = 25f;
     }
+    
+    public static class PingRequest {
+        public long timestamp;
+    }
+    
+    public static class PingResponse {
+        public long timestamp;
+    }
+    
+    public static class PlayerDisconnected {
+        public int id;
+    }
 
     public static void register(Kryo kryo) {
         kryo.register(PlayerUpdate.class);
         kryo.register(BulletUpdate.class);
         kryo.register(PlayerHit.class);
+        kryo.register(PingRequest.class);
+        kryo.register(PingResponse.class);
+        kryo.register(PlayerDisconnected.class);
     }
 }

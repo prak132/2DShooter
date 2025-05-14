@@ -5,6 +5,9 @@ import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
 import io.github.shooter.multiplayer.Network.BulletUpdate;
+import io.github.shooter.multiplayer.Network.PingRequest;
+import io.github.shooter.multiplayer.Network.PingResponse;
+import io.github.shooter.multiplayer.Network.PlayerDisconnected;
 import io.github.shooter.multiplayer.Network.PlayerHit;
 import io.github.shooter.multiplayer.Network.PlayerUpdate;
 
@@ -29,6 +32,12 @@ public class ServerListener extends Listener {
             PlayerHit hit = (PlayerHit) object;
             server.sendToAllTCP(hit);
         }
+        else if (object instanceof PingRequest) {
+            PingRequest request = (PingRequest) object;
+            PingResponse response = new PingResponse();
+            response.timestamp = request.timestamp;
+            connection.sendTCP(response);
+        }
     }
     
     @Override
@@ -39,5 +48,8 @@ public class ServerListener extends Listener {
     @Override
     public void disconnected(Connection connection) {
         System.out.println("Client disconnected: " + connection.getID());
+        PlayerDisconnected disconnected = new PlayerDisconnected();
+        disconnected.id = connection.getID();
+        server.sendToAllExceptTCP(connection.getID(), disconnected);
     }
 }
