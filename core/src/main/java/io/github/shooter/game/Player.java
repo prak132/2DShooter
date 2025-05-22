@@ -32,6 +32,8 @@ public class Player {
     private long respawnTime = 0;
     private static final long RESPAWN_DELAY = 3000;
     private float rotationAngleDeg = 0f;
+    private String username = "Player";
+    private int kills = 0;
 
     private Array<Gun> guns;
     private int currentGunIndex;
@@ -52,6 +54,11 @@ public class Player {
         guns.add(GunFactory.createGun(GunType.SUBMACHINE_GUN));
         currentGunIndex = 0;
         isFiring = false;
+    }
+    
+    public Player(float x, float y, float radius, String username) {
+        this(x, y, radius);
+        this.username = username;
     }
 
     public void update(float delta, float screenW, float screenH, Array<Rectangle> obstacles) {
@@ -252,5 +259,38 @@ public class Player {
 
     public void setSpeed(float spd) {
         this.speed = spd;
+    }
+    
+    public String getUsername() {
+        return username;
+    }
+    
+    public void setUsername(String username) {
+        if (username != null && !username.trim().isEmpty()) {
+            this.username = username;
+        }
+    }
+    
+    public int getKills() {
+        return kills;
+    }
+    
+    public void incrementKills() {
+        this.kills++;
+    }
+    
+    public void setKills(int kills) {
+        this.kills = kills;
+    }
+    
+    public void renderUsername(SpriteBatch batch, BitmapFont font) {
+        if (!alive) return;
+        
+        String text = username;
+        float textWidth = font.getScaleX() * text.length() * 8;
+        float x = hitbox.x - textWidth / 2;
+        float y = hitbox.y + hitbox.radius * 2 + 15;
+        
+        font.draw(batch, text, x, y);
     }
 }

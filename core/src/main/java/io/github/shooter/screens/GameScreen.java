@@ -69,6 +69,8 @@ public class GameScreen implements Screen {
 
     private final InputAdapter input;
 
+    private final ArrayList<PlayerScore> leaderboard = new ArrayList<>();
+
     public GameScreen(Main game, boolean multiplayer, String serverAddress) {
         this.game = game;
         this.multiplayer = multiplayer;
@@ -88,6 +90,7 @@ public class GameScreen implements Screen {
 
         map = new GameMap();
         player = new Player(WORLD_WIDTH / 2f, WORLD_HEIGHT / 2f, PLAYER_RADIUS);
+        player.setUsername(game.getUsername());
 
         input = new InputAdapter() {
             @Override
@@ -125,7 +128,16 @@ public class GameScreen implements Screen {
                 bullet.setRadius(Math.min(5f + (damage / 10f), 10f));
                 bullets.add(bullet);
             });
-            l.setPlayerHitListener((src, dmg) -> player.takeDamage(dmg));
+            l.setPlayerHitListener((sourceId, dmg) -> {
+                float oldHealth = player.getHealth();
+                player.takeDamage(dmg);
+                if (oldHealth > 0 && player.getHealth() <= 0) {
+                    PlayerData killerData = client.getOtherPlayers().get(sourceId);
+                    if (killerData != null) {
+                        killerData.enemyPlayer.setKills(killerData.enemyPlayer.getKills() + 1);
+                    }
+                }
+            });
             client.getClient().addListener(l);
         } catch (IOException e) {
             System.err.println("Connect failed: " + e.getMessage());
@@ -259,9 +271,12 @@ public class GameScreen implements Screen {
 
         batch.begin();
         player.render(batch);
+        player.renderUsername(batch, game.font);
+        
         if (multiplayer && client != null) {
             for (PlayerData otherPlayer : client.getOtherPlayers().values()) {
                 otherPlayer.enemyPlayer.render(batch);
+                otherPlayer.enemyPlayer.renderUsername(batch, game.font);
             }
         }
         
@@ -283,6 +298,9 @@ public class GameScreen implements Screen {
             game.font.draw(batch, pingText, WORLD_WIDTH - textWidth - 120, WORLD_HEIGHT - 40);
         }
         
+        updateLeaderboard();
+        renderLeaderboard(batch);
+        
         game.font.getData().setScale(1.0f);
 
         Vector3 playerScreenPos = new Vector3(player.getX(), player.getY(), 0);
@@ -298,11 +316,17 @@ public class GameScreen implements Screen {
         }
         batch.end();
 
+        updateLeaderboard();
+
+        batch.begin();
+        renderLeaderboard(batch);
+        batch.end();
+
         if (multiplayer && client != null) {
             if (player.isAlive()) {
-                client.sendPlayerUpdate(player.getX(), player.getY(), player.getHealth(), true, player.getRotationAngleDeg());
+                client.sendPlayerUpdate(player.getX(), player.getY(), player.getHealth(), true, player.getRotationAngleDeg(), player.getUsername(), player.getKills());
             } else {
-                client.sendPlayerUpdate(player.getX(), player.getY(), 0, false, player.getRotationAngleDeg());
+                client.sendPlayerUpdate(player.getX(), player.getY(), 0, false, player.getRotationAngleDeg(), player.getUsername(), player.getKills());
             }
         }
     }
@@ -369,14 +393,64 @@ public class GameScreen implements Screen {
             
             if (b.getOwnerId() == client.getClientId()) {
                 for (Map.Entry<Integer, PlayerData> e : others.entrySet()) {
-                    if (e.getValue().alive && Intersector.overlaps(bc, e.getValue().hitbox)) {
+                    PlayerData targetData = e.getValue();
+                    if (targetData.alive && Intersector.overlaps(bc, targetData.hitbox)) {
+                        boolean fatal = targetData.health <= b.getDamage();
                         client.sendPlayerHit(e.getKey(), b.getDamage());
+                        if (fatal) {
+                            player.incrementKills();
+                        }
                         b.stop();
                         it.remove();
                         break;
                     }
                 }
             }
+        }
+    }
+
+    private void updateLeaderboard() {
+        leaderboard.clear();
+        leaderboard.add(new PlayerScore(player.getUsername(), player.getKills()));
+        if (multiplayer && client != null) {
+            for (PlayerData otherPlayer : client.getOtherPlayers().values()) {
+                leaderboard.add(new PlayerScore(otherPlayer.enemyPlayer.getUsername(), 
+                                               otherPlayer.enemyPlayer.getKills()));
+            }
+        }
+        leaderboard.sort((a, b) -> Integer.compare(b.kills, a.kills));
+    }
+    
+    private void renderLeaderboard(SpriteBatch batch) {
+        float startX = WORLD_WIDTH - 250;
+        float startY = WORLD_HEIGHT - 100;
+        float rowHeight = 40;
+        game.font.setColor(1, 1, 1, 1);
+        game.font.getData().setScale(2);
+        game.font.draw(batch, "Leaderboard", startX, startY);
+        game.font.getData().setScale(1.5f);
+        for (int i = 0; i < leaderboard.size(); i++) {
+            PlayerScore score = leaderboard.get(i);
+            String entry = (i + 1) + ". " + score.username + " : " + score.kills;
+            if (score.username.equals(player.getUsername())) {
+                game.font.setColor(1, 0.8f, 0, 1);
+            } else {
+                game.font.setColor(1, 1, 1, 1);
+            }
+            
+            game.font.draw(batch, entry, startX, startY - (i + 1) * rowHeight);
+        }
+        game.font.setColor(1, 1, 1, 1);
+        game.font.getData().setScale(1);
+    }
+    
+    private static class PlayerScore {
+        String username;
+        int kills;
+        
+        PlayerScore(String username, int kills) {
+            this.username = username;
+            this.kills = kills;
         }
     }
 

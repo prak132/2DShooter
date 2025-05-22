@@ -3,7 +3,6 @@ package io.github.shooter.screens;
 import java.net.InetAddress;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -11,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
@@ -59,6 +59,12 @@ public class MenuScreen implements Screen {
 
         buttonStyle.font = game.font;
         skin.add("default", buttonStyle);
+        
+        TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
+        textFieldStyle.font = game.font;
+        textFieldStyle.fontColor = com.badlogic.gdx.graphics.Color.WHITE;
+        textFieldStyle.cursor = buttonStyle.up;
+        skin.add("default", textFieldStyle);
 
         // layout
         Table root = new Table();
@@ -68,6 +74,9 @@ public class MenuScreen implements Screen {
 
         Label title = new Label("Welcome to 2D Shooter", skin);
         title.setAlignment(Align.center);
+        
+        Label usernameLabel = new Label("Your Username:", skin);
+        TextField usernameField = new TextField("Player", skin);
 
         TextButton singlePlayerBtn = new TextButton("Single Player", skin);
         TextButton hostBtn         = new TextButton("Host Multiplayer", skin);
@@ -79,7 +88,7 @@ public class MenuScreen implements Screen {
             InetAddress localHost = InetAddress.getLocalHost();
             ipText = "Your IP: " + localHost.getHostAddress();
         } 
-        catch (Exception e) 
+        catch (java.net.UnknownHostException e) 
         {
             ipText = "can't determine your IP";
         }
@@ -89,6 +98,12 @@ public class MenuScreen implements Screen {
         // add rows w/ spacing
         float pad = 20f;
         root.add(title).padBottom(pad * 2).row();
+        
+        Table usernameTable = new Table();
+        usernameTable.add(usernameLabel).padRight(10);
+        usernameTable.add(usernameField).width(200);
+        root.add(usernameTable).padBottom(pad * 2).row();
+        
         root.add(singlePlayerBtn).padBottom(pad).width(300).row();
         root.add(hostBtn).padBottom(pad).width(300).row();
         root.add(joinBtn).padBottom(pad * 2).width(300).row();
@@ -100,18 +115,21 @@ public class MenuScreen implements Screen {
         {
             @Override public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) 
             {
+                game.setUsername(usernameField.getText());
                 game.startGame(false, false, null);
             }
         });
 
         hostBtn.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+                game.setUsername(usernameField.getText());
                 game.startGame(true, true, "localhost");
             }
         });
 
         joinBtn.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+                game.setUsername(usernameField.getText());
                 game.setScreen(new IPInputScreen(game));
             }
         });
@@ -126,11 +144,6 @@ public class MenuScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        // back up keyboard shortcuts
-        if (Gdx.input.isKeyJustPressed(Input.Keys.S)) game.startGame(false, false, null);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) game.startGame(true, true, "localhost");
-        if (Gdx.input.isKeyJustPressed(Input.Keys.J)) game.setScreen(new IPInputScreen(game));
 
         stage.act(delta);
         stage.draw();

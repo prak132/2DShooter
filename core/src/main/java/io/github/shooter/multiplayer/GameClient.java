@@ -89,7 +89,7 @@ public class GameClient {
         return client;
     }
 
-    public void sendPlayerUpdate(float x, float y, float health, boolean alive, float rotation) {
+    public void sendPlayerUpdate(float x, float y, float health, boolean alive, float rotation, String username, int kills) {
         PlayerUpdate update = new PlayerUpdate();
         update.id = clientId;
         update.x = x;
@@ -97,6 +97,8 @@ public class GameClient {
         update.health = health;
         update.alive = alive;
         update.rotation = rotation;
+        update.username = username;
+        update.kills = kills;
         client.sendTCP(update);
     }
     
@@ -116,17 +118,22 @@ public class GameClient {
         hit.sourceId = clientId;
         hit.targetId = targetId;
         hit.damage = damage;
+        PlayerData target = otherPlayers.get(targetId);
+        if (target != null && target.health <= damage) {
+            hit.fatal = true;
+        }
+        
         client.sendTCP(hit);
     }
     
-    public void updateOtherPlayer(int playerId, float x, float y, float health, boolean alive, float rotation) {
+    public void updateOtherPlayer(int playerId, float x, float y, float health, boolean alive, float rotation, String username, int kills) {
         if (playerId != clientId) {
             PlayerData data = otherPlayers.get(playerId);
             if (data == null) {
                 data = new PlayerData(playerId, x, y);
                 otherPlayers.put(playerId, data);
             } else {
-                data.update(x, y, health, alive, rotation);
+                data.update(x, y, health, alive, rotation, username, kills);
             }
         }
     }
@@ -210,6 +217,11 @@ public class GameClient {
             this.hitbox.setPosition(x, y);
             this.enemyPlayer.update(x, y, health, alive);
             this.enemyPlayer.setRotationAngleDeg(rotation);
+        }
+        
+        public void update(float x, float y, float health, boolean alive, float rotation, String username, int kills) {
+            update(x, y, health, alive, rotation);
+            this.enemyPlayer.update(x, y, health, alive, username, kills);
         }
     }
 }

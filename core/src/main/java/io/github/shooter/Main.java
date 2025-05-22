@@ -15,6 +15,7 @@ public class Main extends Game {
     public SpriteBatch batch;
     public BitmapFont font;
     private GameServer server;
+    private String username = "Player";
 
     @Override
     public void create() {
@@ -42,6 +43,16 @@ public class Main extends Game {
         }
 
         setScreen(new GameScreen(this, multiplayer, serverAddress));
+    }
+    
+    public void setUsername(String username) {
+        if (username != null && !username.trim().isEmpty()) {
+            this.username = username;
+        }
+    }
+    
+    public String getUsername() {
+        return username;
     }
 
     @Override

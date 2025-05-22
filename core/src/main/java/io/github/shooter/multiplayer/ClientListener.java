@@ -31,7 +31,7 @@ public class ClientListener extends Listener {
     public void received(Connection connection, Object object) {
         if (object instanceof PlayerUpdate) {
             PlayerUpdate update = (PlayerUpdate) object;
-            gameClient.updateOtherPlayer(update.id, update.x, update.y, update.health, update.alive, update.rotation);
+            gameClient.updateOtherPlayer(update.id, update.x, update.y, update.health, update.alive, update.rotation, update.username, update.kills);
         }
         else if (object instanceof BulletUpdate) {
             BulletUpdate update = (BulletUpdate) object;
