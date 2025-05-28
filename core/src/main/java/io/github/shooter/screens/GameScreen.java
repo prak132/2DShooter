@@ -34,6 +34,11 @@ import io.github.shooter.multiplayer.ClientListener;
 import io.github.shooter.multiplayer.GameClient;
 import io.github.shooter.multiplayer.GameClient.PlayerData;
 
+
+
+/**
+ * Primary in‑game screen: handles input, logic updates and rendering.
+ */
 // TODO: Seperate code out into different classes to make this file more readable
 public class GameScreen implements Screen {
 
@@ -70,6 +75,14 @@ public class GameScreen implements Screen {
     private final InputAdapter input;
 
     private final ArrayList<PlayerScore> leaderboard = new ArrayList<>();
+
+/**
+ * Creates a new game screen.
+ *
+ * @param game          main game instance
+ * @param multiplayer   whether to connect to a server
+ * @param serverAddress address of server or {@code null} for localhost
+ */
 
     public GameScreen(Main game, boolean multiplayer, String serverAddress) {
         this.game = game;
@@ -114,6 +127,8 @@ public class GameScreen implements Screen {
     }
 
     @Override
+    /** {@inheritDoc} */
+
     public void show() {
         Gdx.input.setInputProcessor(input);
         if (!multiplayer) {
@@ -145,6 +160,11 @@ public class GameScreen implements Screen {
     }
 
     @Override
+    /**
+ * Main game-loop update and render routine.
+ *
+ * @param dt delta-time in seconds
+ */
     public void render(float dt) {
         if (multiplayer && client != null) {
             client.initializeEnemyTextures();
@@ -331,6 +351,9 @@ public class GameScreen implements Screen {
         }
     }
 
+    /**
+ * Processes WASD movement input and sets the player's velocity vector accordingly.
+ */
     private void handleInput() {
         vel.set(0, 0);
         float speed = player.getSpeed();
@@ -352,6 +375,11 @@ public class GameScreen implements Screen {
         player.setVelocity(vel);
     }
 
+    /**
+ * Updates bullet positions and removes bullets that are expired or collide with obstacles.
+ *
+ * @param dt time delta since last frame, in seconds
+ */
     private void updateBullets(float dt) {
         for (Iterator<Bullet> it = bullets.iterator(); it.hasNext();) {
             Bullet b = it.next();
@@ -371,7 +399,10 @@ public class GameScreen implements Screen {
         }
     }
     
-
+/**
+ * Detects and handles bullet collisions with the player or other players.
+ * Applies damage and updates kill counts accordingly.
+ */
     private void checkBulletCollisions() {
         if (!player.isAlive() || client == null) {
             return;
@@ -409,6 +440,9 @@ public class GameScreen implements Screen {
         }
     }
 
+    /**
+ * Updates the leaderboard list with current player and enemy kill stats.
+ */
     private void updateLeaderboard() {
         leaderboard.clear();
         leaderboard.add(new PlayerScore(player.getUsername(), player.getKills()));
@@ -421,6 +455,11 @@ public class GameScreen implements Screen {
         leaderboard.sort((a, b) -> Integer.compare(b.kills, a.kills));
     }
     
+    /**
+ * Renders the leaderboard overlay showing player rankings.
+ *
+ * @param batch the SpriteBatch used for drawing text
+ */
     private void renderLeaderboard(SpriteBatch batch) {
         float startX = WORLD_WIDTH - 250;
         float startY = WORLD_HEIGHT - 100;
@@ -444,6 +483,12 @@ public class GameScreen implements Screen {
         game.font.getData().setScale(1);
     }
     
+    /**
+ * Constructs a leaderboard entry.
+ *
+ * @param username player name
+ * @param kills    kill tally
+ */
     private static class PlayerScore {
         String username;
         int kills;

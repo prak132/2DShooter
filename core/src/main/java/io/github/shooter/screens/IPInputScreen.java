@@ -18,6 +18,11 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import io.github.shooter.Main;
 
+/**
+ * Constructs the IP input screen where the user can enter a server address.
+ *
+ * @param game main game instance
+ */
 public class IPInputScreen implements Screen {
     private final Main game;
     private final Stage stage;
@@ -108,6 +113,10 @@ public class IPInputScreen implements Screen {
         }
     }
 
+
+    /**
+ * Attempts to start the game with the entered IP address if not empty.
+ */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
