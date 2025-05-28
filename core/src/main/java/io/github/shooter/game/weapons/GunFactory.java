@@ -1,6 +1,7 @@
 package io.github.shooter.game.weapons;
 
 public class GunFactory {
+
     public enum GunType {
         ASSAULT_RIFLE,
         SNIPER_RIFLE,

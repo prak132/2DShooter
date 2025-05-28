@@ -20,9 +20,9 @@ import io.github.shooter.game.weapons.GunFactory;
 import io.github.shooter.game.weapons.GunFactory.GunType;
 
 /**
- * The Player class represents the player character in the game.
- * Handles movement, shooting, health, respawning, and rendering.
- * Pretty much your in-game avatar with guns and all.
+ * The Player class represents the player character in the game. Handles
+ * movement, shooting, health, respawning, and rendering. Pretty much your
+ * in-game avatar with guns and all.
  */
 public class Player {
 
@@ -48,8 +48,8 @@ public class Player {
     private static final int MAX_RESPAWN_ATTEMPTS = 20;
 
     /**
-     * Creates a new player at the specified position with given size.
-     * Also loads default texture and sets up guns.
+     * Creates a new player at the specified position with given size. Also
+     * loads default texture and sets up guns.
      *
      * @param x initial x position
      * @param y initial y position
@@ -60,7 +60,7 @@ public class Player {
         velocity = new Vector2();
         texture = new Texture("Player1.png");
         texture.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
-        
+
         guns = new Array<>();
         guns.add(GunFactory.createGun(GunType.ASSAULT_RIFLE));
         guns.add(GunFactory.createGun(GunType.SNIPER_RIFLE));
@@ -68,7 +68,7 @@ public class Player {
         currentGunIndex = 0;
         isFiring = false;
     }
-    
+
     /**
      * Same as other constructor but lets you set the username.
      *
@@ -83,8 +83,8 @@ public class Player {
     }
 
     /**
-     * Update player's position and gun state.
-     * Also prevents the player from moving through obstacles or off screen.
+     * Update player's position and gun state. Also prevents the player from
+     * moving through obstacles or off screen.
      *
      * @param delta time since last update (seconds)
      * @param screenW screen width (for boundary checks)
@@ -93,9 +93,9 @@ public class Player {
      */
     public void update(float delta, float screenW, float screenH, Array<Rectangle> obstacles) {
         getCurrentGun().update();
-        
+
         Vector2 move = new Vector2(velocity).scl(delta);
-        
+
         hitbox.x += move.x;
         for (Rectangle r : obstacles) {
             if (Intersector.overlaps(hitbox, r)) {
@@ -107,7 +107,7 @@ public class Player {
                 break;
             }
         }
-        
+
         hitbox.y += move.y;
         for (Rectangle r : obstacles) {
             if (Intersector.overlaps(hitbox, r)) {
@@ -120,21 +120,39 @@ public class Player {
             }
         }
 
-        if (hitbox.x - hitbox.radius < 0) hitbox.x = hitbox.radius;
-        if (hitbox.x + hitbox.radius > screenW) hitbox.x = screenW - hitbox.radius;
-        if (hitbox.y - hitbox.radius < 0) hitbox.y = hitbox.radius;
-        if (hitbox.y + hitbox.radius > screenH) hitbox.y = screenH - hitbox.radius;
+        if (hitbox.x - hitbox.radius < 0) {
+            hitbox.x = hitbox.radius;
+        }
+        if (hitbox.x + hitbox.radius > screenW) {
+            hitbox.x = screenW - hitbox.radius;
+        }
+        if (hitbox.y - hitbox.radius < 0) {
+            hitbox.y = hitbox.radius;
+        }
+        if (hitbox.y + hitbox.radius > screenH) {
+            hitbox.y = screenH - hitbox.radius;
+        }
     }
 
     /**
      * Checks keyboard input for switching guns or reloading.
      */
     public void handleGunInput() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) switchToGun(0);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) switchToGun(1);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) switchToGun(2);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) switchToGun((currentGunIndex + 1) % guns.size);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) switchToGun((currentGunIndex - 1 + guns.size) % guns.size);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
+            switchToGun(0);
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
+            switchToGun(1);
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
+            switchToGun(2);
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            switchToGun((currentGunIndex + 1) % guns.size);
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+            switchToGun((currentGunIndex - 1 + guns.size) % guns.size);
+        }
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
             getCurrentGun().reload();
             speed = maxSpeed;
@@ -147,7 +165,9 @@ public class Player {
      * @return true if the gun fired successfully, false otherwise
      */
     public boolean attemptToFire() {
-        if (!alive) return false;
+        if (!alive) {
+            return false;
+        }
         return getCurrentGun().fire();
     }
 
@@ -159,7 +179,9 @@ public class Player {
      * @return true if fired, false otherwise
      */
     public boolean fireAt(float dirX, float dirY) {
-        if (!alive) return false;
+        if (!alive) {
+            return false;
+        }
         return attemptToFire();
     }
 
@@ -169,7 +191,9 @@ public class Player {
      * @param index index of the gun to switch to
      */
     public void switchToGun(int index) {
-        if (index >= 0 && index < guns.size) currentGunIndex = index;
+        if (index >= 0 && index < guns.size) {
+            currentGunIndex = index;
+        }
     }
 
     /**
@@ -187,8 +211,10 @@ public class Player {
      * @param batch the SpriteBatch to draw with
      */
     public void render(SpriteBatch batch) {
-        if (!alive) return;
-        
+        if (!alive) {
+            return;
+        }
+
         float size = hitbox.radius * 2f;
         batch.draw(texture,
                 hitbox.x - hitbox.radius, hitbox.y - hitbox.radius,
@@ -226,7 +252,9 @@ public class Player {
      * @param dmg amount of damage to apply
      */
     public void takeDamage(float dmg) {
-        if (!alive) return;
+        if (!alive) {
+            return;
+        }
         if ((health -= dmg) <= 0) {
             health = 0;
             alive = false;
@@ -244,13 +272,13 @@ public class Player {
     public void respawn(float w, float h, Map<Integer, ?> otherPlayers) {
         alive = true;
         health = 200f;
-        
+
         if (otherPlayers == null || otherPlayers.isEmpty()) {
             hitbox.x = 100 + (float) Math.random() * (w - 200);
             hitbox.y = 100 + (float) Math.random() * (h - 200);
             return;
         }
-        
+
         for (int attempt = 0; attempt < MAX_RESPAWN_ATTEMPTS; attempt++) {
             float x = 100 + (float) Math.random() * (w - 200);
             float y = 100 + (float) Math.random() * (h - 200);
@@ -265,18 +293,18 @@ public class Player {
                     }
                 }
             }
-            
+
             if (positionIsGood) {
                 hitbox.x = x;
                 hitbox.y = y;
                 return;
             }
         }
-        
+
         hitbox.x = 100 + (float) Math.random() * (w - 200);
         hitbox.y = 100 + (float) Math.random() * (h - 200);
     }
-    
+
     /**
      * Convenience method to respawn without worrying about other players.
      *
@@ -472,7 +500,9 @@ public class Player {
      * @param font BitmapFont to draw text
      */
     public void renderUsername(SpriteBatch batch, BitmapFont font) {
-        if (!alive) return;
+        if (!alive) {
+            return;
+        }
 
         String text = username;
         float textWidth = font.getScaleX() * text.length() * 8;

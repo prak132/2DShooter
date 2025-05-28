@@ -7,10 +7,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Circle;
 
 /**
- * Represents an enemy player in the game.
- * Holds position, health, and status info and handles rendering.
+ * Represents an enemy player in the game. Holds position, health, and status
+ * info and handles rendering.
  */
 public class EnemyPlayer {
+
     private final Circle hitbox;
     private static Texture texture;
     private float rotationAngleDeg;
@@ -23,7 +24,7 @@ public class EnemyPlayer {
     /**
      * Creates a new enemy player at given position with specified radius.
      * Starts alive with full health.
-     * 
+     *
      * @param x X coordinate for spawn position.
      * @param y Y coordinate for spawn position.
      * @param radius Radius of the hitbox.
@@ -34,10 +35,10 @@ public class EnemyPlayer {
         health = 100f;
         rotationAngleDeg = 0f;
     }
-    
+
     /**
-     * Loads the enemy player texture once if not loaded already.
-     * Call this before rendering any enemy players to avoid glitches.
+     * Loads the enemy player texture once if not loaded already. Call this
+     * before rendering any enemy players to avoid glitches.
      */
     public void initializeTexture() {
         if (!textureInitialized) {
@@ -51,7 +52,7 @@ public class EnemyPlayer {
 
     /**
      * Updates position, health, and alive status.
-     * 
+     *
      * @param x New X coordinate.
      * @param y New Y coordinate.
      * @param health Current health value.
@@ -62,11 +63,11 @@ public class EnemyPlayer {
         this.health = health;
         this.alive = alive;
     }
-    
+
     /**
-     * Updates position, health, alive status, plus username and kills.
-     * Useful for syncing more info in multiplayer.
-     * 
+     * Updates position, health, alive status, plus username and kills. Useful
+     * for syncing more info in multiplayer.
+     *
      * @param x New X coordinate.
      * @param y New Y coordinate.
      * @param health Current health value.
@@ -83,12 +84,14 @@ public class EnemyPlayer {
     /**
      * Renders the enemy player sprite at its current position and rotation.
      * Does nothing if enemy is dead or texture isn't ready.
-     * 
+     *
      * @param batch Sprite batch to draw with.
      */
     public void render(SpriteBatch batch) {
-        if (!alive || !textureInitialized) return;
-        
+        if (!alive || !textureInitialized) {
+            return;
+        }
+
         float size = hitbox.radius * 2f;
         batch.draw(texture,
                 hitbox.x - hitbox.radius, hitbox.y - hitbox.radius,
@@ -101,16 +104,18 @@ public class EnemyPlayer {
                 false, false
         );
     }
-    
+
     /**
-     * Draws the enemy player's username above their sprite.
-     * Skips if the enemy isn't alive.
-     * 
+     * Draws the enemy player's username above their sprite. Skips if the enemy
+     * isn't alive.
+     *
      * @param batch Sprite batch for drawing text.
      * @param font BitmapFont to use for rendering the name.
      */
     public void renderUsername(SpriteBatch batch, BitmapFont font) {
-        if (!alive) return;
+        if (!alive) {
+            return;
+        }
         String text = username;
         float textWidth = font.getScaleX() * text.length() * 8;
         float x = hitbox.x - textWidth / 2;
@@ -118,44 +123,58 @@ public class EnemyPlayer {
         font.draw(batch, text, x, y);
     }
 
-    /** Sets the rotation angle for rendering. */
+    /**
+     * Sets the rotation angle for rendering.
+     */
     public void setRotationAngleDeg(float angle) {
         this.rotationAngleDeg = angle;
     }
-    
-    /** Returns whether the enemy is alive. */
+
+    /**
+     * Returns whether the enemy is alive.
+     */
     public boolean isAlive() {
         return alive;
     }
 
-    /** Returns current health. */
+    /**
+     * Returns current health.
+     */
     public float getHealth() {
         return health;
     }
-    
-    /** Gets the username. */
+
+    /**
+     * Gets the username.
+     */
     public String getUsername() {
         return username;
     }
-    
-    /** Sets a new username. */
+
+    /**
+     * Sets a new username.
+     */
     public void setUsername(String username) {
         this.username = username;
     }
-    
-    /** Returns how many kills this enemy has. */
+
+    /**
+     * Returns how many kills this enemy has.
+     */
     public int getKills() {
         return kills;
     }
-    
-    /** Updates kills count. */
+
+    /**
+     * Updates kills count.
+     */
     public void setKills(int kills) {
         this.kills = kills;
     }
 
     /**
-     * Cleans up the static texture resource when the game shuts down.
-     * Call this to avoid memory leaks.
+     * Cleans up the static texture resource when the game shuts down. Call this
+     * to avoid memory leaks.
      */
     public static void disposeTexture() {
         if (texture != null) {

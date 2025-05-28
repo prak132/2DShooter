@@ -34,12 +34,9 @@ import io.github.shooter.multiplayer.ClientListener;
 import io.github.shooter.multiplayer.GameClient;
 import io.github.shooter.multiplayer.GameClient.PlayerData;
 
-
-
 /**
- * Primary in‑game screen: handles input, logic updates and rendering.
+ * In game screen that handles input, logic updates and rendering.
  */
-// TODO: Seperate code out into different classes to make this file more readable
 public class GameScreen implements Screen {
 
     private static final float WORLD_WIDTH = 1312, WORLD_HEIGHT = 1232;
@@ -48,10 +45,10 @@ public class GameScreen implements Screen {
     private final Main game;
     private final OrthographicCamera camera;
     private final Viewport viewport;
-    
+
     private final OrthographicCamera uiCamera;
     private final Viewport uiViewport;
-    
+
     private final ShapeRenderer shapeRenderer;
     private final SpriteBatch batch;
 
@@ -76,14 +73,13 @@ public class GameScreen implements Screen {
 
     private final ArrayList<PlayerScore> leaderboard = new ArrayList<>();
 
-/**
- * Creates a new game screen.
- *
- * @param game          main game instance
- * @param multiplayer   whether to connect to a server
- * @param serverAddress address of server or {@code null} for localhost
- */
-
+    /**
+     * Creates a new game screen.
+     *
+     * @param game main game instance
+     * @param multiplayer whether to connect to a server
+     * @param serverAddress address of server or null for localhost
+     */
     public GameScreen(Main game, boolean multiplayer, String serverAddress) {
         this.game = game;
         this.multiplayer = multiplayer;
@@ -127,8 +123,10 @@ public class GameScreen implements Screen {
     }
 
     @Override
-    /** {@inheritDoc} */
-
+    /**
+     * Initializes input processing and connects to the game server if in
+     * multiplayer mode.
+     */
     public void show() {
         Gdx.input.setInputProcessor(input);
         if (!multiplayer) {
@@ -161,15 +159,15 @@ public class GameScreen implements Screen {
 
     @Override
     /**
- * Main game-loop update and render routine.
- *
- * @param dt delta-time in seconds
- */
+     * Main game-loop update and render routine.
+     *
+     * @param dt delta-time in seconds
+     */
     public void render(float dt) {
         if (multiplayer && client != null) {
             client.initializeEnemyTextures();
         }
-        
+
         updateBullets(dt);
         if (multiplayer) {
             checkBulletCollisions();
@@ -292,20 +290,20 @@ public class GameScreen implements Screen {
         batch.begin();
         player.render(batch);
         player.renderUsername(batch, game.font);
-        
+
         if (multiplayer && client != null) {
             for (PlayerData otherPlayer : client.getOtherPlayers().values()) {
                 otherPlayer.enemyPlayer.render(batch);
                 otherPlayer.enemyPlayer.renderUsername(batch, game.font);
             }
         }
-        
+
         batch.end();
 
         uiCamera.update();
         batch.setProjectionMatrix(uiCamera.combined);
         batch.begin();
-        
+
         String healthText = "Health: " + (int) player.getHealth();
         batch.setColor(1, 1, 1, 1);
         game.font.getData().setScale(2.5f);
@@ -317,10 +315,10 @@ public class GameScreen implements Screen {
             float textWidth = game.font.getData().spaceXadvance * pingText.length() * 1.2f;
             game.font.draw(batch, pingText, WORLD_WIDTH - textWidth - 120, WORLD_HEIGHT - 40);
         }
-        
+
         updateLeaderboard();
         renderLeaderboard(batch);
-        
+
         game.font.getData().setScale(1.0f);
 
         Vector3 playerScreenPos = new Vector3(player.getX(), player.getY(), 0);
@@ -352,8 +350,9 @@ public class GameScreen implements Screen {
     }
 
     /**
- * Processes WASD movement input and sets the player's velocity vector accordingly.
- */
+     * Processes WASD movement input and sets the player's velocity vector
+     * accordingly.
+     */
     private void handleInput() {
         vel.set(0, 0);
         float speed = player.getSpeed();
@@ -367,19 +366,20 @@ public class GameScreen implements Screen {
                 : Math.max(accel[3] - speed / slide, 0);
         vel.x = accel[0] + accel[1];
         vel.y = accel[2] + accel[3];
-        
+
         if (vel.x != 0 && vel.y != 0) {
             vel.nor().scl(speed);
         }
-        
+
         player.setVelocity(vel);
     }
 
     /**
- * Updates bullet positions and removes bullets that are expired or collide with obstacles.
- *
- * @param dt time delta since last frame, in seconds
- */
+     * Updates bullet positions and removes bullets that are expired or collide
+     * with obstacles.
+     *
+     * @param dt time delta since last frame, in seconds
+     */
     private void updateBullets(float dt) {
         for (Iterator<Bullet> it = bullets.iterator(); it.hasNext();) {
             Bullet b = it.next();
@@ -398,11 +398,11 @@ public class GameScreen implements Screen {
             }
         }
     }
-    
-/**
- * Detects and handles bullet collisions with the player or other players.
- * Applies damage and updates kill counts accordingly.
- */
+
+    /**
+     * Detects and handles bullet collisions with the player or other players.
+     * Applies damage and updates kill counts accordingly.
+     */
     private void checkBulletCollisions() {
         if (!player.isAlive() || client == null) {
             return;
@@ -413,7 +413,7 @@ public class GameScreen implements Screen {
             if (b.isStopped()) {
                 continue;
             }
-            
+
             Circle bc = new Circle(b.getX(), b.getY(), b.getRadius());
             if (b.getOwnerId() != client.getClientId() && Intersector.overlaps(bc, player.getHitbox())) {
                 player.takeDamage(b.getDamage());
@@ -421,7 +421,7 @@ public class GameScreen implements Screen {
                 it.remove();
                 continue;
             }
-            
+
             if (b.getOwnerId() == client.getClientId()) {
                 for (Map.Entry<Integer, PlayerData> e : others.entrySet()) {
                     PlayerData targetData = e.getValue();
@@ -441,25 +441,25 @@ public class GameScreen implements Screen {
     }
 
     /**
- * Updates the leaderboard list with current player and enemy kill stats.
- */
+     * Updates the leaderboard list with current player and enemy kill stats.
+     */
     private void updateLeaderboard() {
         leaderboard.clear();
         leaderboard.add(new PlayerScore(player.getUsername(), player.getKills()));
         if (multiplayer && client != null) {
             for (PlayerData otherPlayer : client.getOtherPlayers().values()) {
-                leaderboard.add(new PlayerScore(otherPlayer.enemyPlayer.getUsername(), 
-                                               otherPlayer.enemyPlayer.getKills()));
+                leaderboard.add(new PlayerScore(otherPlayer.enemyPlayer.getUsername(),
+                        otherPlayer.enemyPlayer.getKills()));
             }
         }
         leaderboard.sort((a, b) -> Integer.compare(b.kills, a.kills));
     }
-    
+
     /**
- * Renders the leaderboard overlay showing player rankings.
- *
- * @param batch the SpriteBatch used for drawing text
- */
+     * Renders the leaderboard overlay showing player rankings.
+     *
+     * @param batch the SpriteBatch used for drawing text
+     */
     private void renderLeaderboard(SpriteBatch batch) {
         float startX = WORLD_WIDTH - 250;
         float startY = WORLD_HEIGHT - 100;
@@ -476,23 +476,24 @@ public class GameScreen implements Screen {
             } else {
                 game.font.setColor(1, 1, 1, 1);
             }
-            
+
             game.font.draw(batch, entry, startX, startY - (i + 1) * rowHeight);
         }
         game.font.setColor(1, 1, 1, 1);
         game.font.getData().setScale(1);
     }
-    
+
     /**
- * Constructs a leaderboard entry.
- *
- * @param username player name
- * @param kills    kill tally
- */
+     * Constructs a leaderboard entry.
+     *
+     * @param username player name
+     * @param kills kill tally
+     */
     private static class PlayerScore {
+
         String username;
         int kills;
-        
+
         PlayerScore(String username, int kills) {
             this.username = username;
             this.kills = kills;

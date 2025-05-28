@@ -19,15 +19,16 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.shooter.Main;
 
 /**
- * Screen where user can type in the server IP to join multiplayer.
- * Has input box for IP, connect and back buttons.
+ * Screen where user can type in the server IP to join multiplayer. Has input
+ * box for IP, connect and back buttons.
  */
 public class IPInputScreen implements Screen {
+
     private final Main game;
     private final Stage stage;
     private final Skin skin;
     private TextField ipField;
-    
+
     /**
      * Constructs the IP input screen where the user can enter a server address.
      *
@@ -37,79 +38,123 @@ public class IPInputScreen implements Screen {
         this.game = game;
 
         stage = new Stage(new ScreenViewport());
-        
+
         skin = new Skin();
         skin.add("default-font", game.font);
-        
+
         Label.LabelStyle labelStyle = new Label.LabelStyle();
         labelStyle.font = game.font;
         skin.add("default", labelStyle);
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
         buttonStyle.up = buttonStyle.over = buttonStyle.down = new Drawable() {
-            @Override public float getLeftWidth() { return 0; }
-            @Override public void setLeftWidth(float width) {}
-            @Override public float getRightWidth() { return 0; }
-            @Override public void setRightWidth(float width) {}
-            @Override public float getTopHeight() { return 0; }
-            @Override public void setTopHeight(float height) {}
-            @Override public float getBottomHeight() { return 0; }
-            @Override public void setBottomHeight(float height) {}
-            @Override public float getMinWidth() { return 0; }
-            @Override public void setMinWidth(float minWidth) {}
-            @Override public float getMinHeight() { return 0; }
-            @Override public void setMinHeight(float minHeight) {}
-            @Override public void draw(com.badlogic.gdx.graphics.g2d.Batch batch, float x, float y, float width, float height) {}
+            @Override
+            public float getLeftWidth() {
+                return 0;
+            }
+
+            @Override
+            public void setLeftWidth(float width) {
+            }
+
+            @Override
+            public float getRightWidth() {
+                return 0;
+            }
+
+            @Override
+            public void setRightWidth(float width) {
+            }
+
+            @Override
+            public float getTopHeight() {
+                return 0;
+            }
+
+            @Override
+            public void setTopHeight(float height) {
+            }
+
+            @Override
+            public float getBottomHeight() {
+                return 0;
+            }
+
+            @Override
+            public void setBottomHeight(float height) {
+            }
+
+            @Override
+            public float getMinWidth() {
+                return 0;
+            }
+
+            @Override
+            public void setMinWidth(float minWidth) {
+            }
+
+            @Override
+            public float getMinHeight() {
+                return 0;
+            }
+
+            @Override
+            public void setMinHeight(float minHeight) {
+            }
+
+            @Override
+            public void draw(com.badlogic.gdx.graphics.g2d.Batch batch, float x, float y, float width, float height) {
+            }
         };
         buttonStyle.font = game.font;
         skin.add("default", buttonStyle);
-        
+
         TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
         textFieldStyle.font = game.font;
         textFieldStyle.fontColor = com.badlogic.gdx.graphics.Color.WHITE;
         textFieldStyle.cursor = buttonStyle.up;
         skin.add("default", textFieldStyle);
-        
+
         Table root = new Table();
         root.setFillParent(true);
         root.center();
         stage.addActor(root);
-        
+
         Label titleLabel = new Label("Enter Server IP Address", skin);
         titleLabel.setAlignment(Align.center);
-        
+
         ipField = new TextField("127.0.0.1", skin);
         ipField.setAlignment(Align.center);
-        
+
         TextButton connectButton = new TextButton("Connect", skin);
         TextButton backButton = new TextButton("Back", skin);
-        
+
         float pad = 20f;
         root.add(titleLabel).padBottom(pad).row();
         root.add(ipField).width(300).padBottom(pad).row();
-        
+
         Table buttonTable = new Table();
         buttonTable.add(connectButton).width(140).padRight(pad);
         buttonTable.add(backButton).width(140);
-        
+
         root.add(buttonTable).padTop(pad);
-        
+
         connectButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 connect();
             }
         });
-        
+
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 game.setScreen(new MenuScreen(game));
             }
         });
-        
+
         stage.setKeyboardFocus(ipField);
     }
-    
+
     /**
      * Tries to start multiplayer game with typed IP if not empty.
      */
@@ -120,7 +165,6 @@ public class IPInputScreen implements Screen {
         }
     }
 
-
     /**
      * Attempts to start the game with the entered IP address if not empty.
      */
@@ -130,8 +174,9 @@ public class IPInputScreen implements Screen {
     }
 
     /**
-     * Draws the screen every frame.
-     * Checks for enter key to connect, escape key to go back.
+     * Draws the screen every frame. Checks for enter key to connect, escape key
+     * to go back.
+     *
      * @param delta time since last frame
      */
     @Override
@@ -146,13 +191,14 @@ public class IPInputScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             game.setScreen(new MenuScreen(game));
         }
-        
+
         stage.act(delta);
         stage.draw();
     }
 
     /**
      * Called when screen size changes, updates viewport.
+     *
      * @param width new width
      * @param height new height
      */
@@ -160,11 +206,19 @@ public class IPInputScreen implements Screen {
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
-    
-    @Override public void hide() {}
-    @Override public void pause() {}
-    @Override public void resume() {}
-    
+
+    @Override
+    public void hide() {
+    }
+
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void resume() {
+    }
+
     /**
      * Clean up resources when screen is closed.
      */

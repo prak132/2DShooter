@@ -12,9 +12,9 @@ import io.github.shooter.screens.MenuScreen;
 
 /**
  * The main game class that manages game-wide resources and screen transitions.
- * Sets up rendering tools and fonts, starts on the menu screen,
- * handles starting new games (single or multiplayer),
- * manages the server if hosting multiplayer.
+ * Sets up rendering tools and fonts, starts on the menu screen, handles
+ * starting new games (single or multiplayer), manages the server if hosting
+ * multiplayer.
  */
 public class Main extends Game {
 
@@ -24,8 +24,8 @@ public class Main extends Game {
     private String username = "Player";
 
     /**
-     * Called once when the game starts.
-     * Initializes batch and font and shows the main menu screen.
+     * Called once when the game starts. Initializes batch and font and shows
+     * the main menu screen.
      */
     @Override
     public void create() {
@@ -36,12 +36,13 @@ public class Main extends Game {
     }
 
     /**
-     * Starts the game screen.
-     * If hosting, tries to start the server and prints IP info.
+     * Starts the game screen. If hosting, tries to start the server and prints
+     * IP info.
      *
-     * @param multiplayer  whether the game should run in multiplayer mode
-     * @param hostServer   true if this instance should act as the server host
-     * @param serverAddress the address of the server to connect to (null if hosting)
+     * @param multiplayer whether the game should run in multiplayer mode
+     * @param hostServer true if this instance should act as the server host
+     * @param serverAddress the address of the server to connect to (null if
+     * hosting)
      */
     public void startGame(boolean multiplayer, boolean hostServer, String serverAddress) {
         if (hostServer) {
@@ -62,9 +63,10 @@ public class Main extends Game {
 
         setScreen(new GameScreen(this, multiplayer, serverAddress));
     }
-    
+
     /**
      * Sets the player's username.
+     *
      * @param username the username to set
      */
     public void setUsername(String username) {
@@ -72,7 +74,7 @@ public class Main extends Game {
             this.username = username;
         }
     }
-    
+
     /**
      * Gets the current player's username.
      *
@@ -91,8 +93,8 @@ public class Main extends Game {
     }
 
     /**
-     * Called when the game closes.
-     * Cleans up resources like the batch, font, active screen, and stops the server if running.
+     * Called when the game closes. Cleans up resources like the batch, font,
+     * active screen, and stops the server if running.
      */
     @Override
     public void dispose() {

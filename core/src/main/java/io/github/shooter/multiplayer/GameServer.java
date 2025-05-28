@@ -8,11 +8,13 @@ import com.esotericsoftware.kryonet.Server;
  * This class handles starting and stopping the game server.
  */
 public class GameServer {
+
     private Server server;
 
     /**
-     * Creates and starts the server.
-     * Registers network message classes and starts listening on the set port.
+     * Creates and starts the server. Registers network message classes and
+     * starts listening on the set port.
+     *
      * @throws IOException if something goes wrong with binding the port
      */
     public GameServer() throws IOException {
@@ -23,8 +25,8 @@ public class GameServer {
         server.start();
         System.out.println("Server started on port " + Network.port);
     }
-    
-     /**
+
+    /**
      * Stops the server if it is running.
      */
     public void stop() {

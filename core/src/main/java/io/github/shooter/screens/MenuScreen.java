@@ -19,12 +19,12 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.shooter.Main;
 
 /**
- * The main menu screen for the game.
- * Shows buttons for single player, hosting, joining multiplayer,
- * and lets player set their username.
- * Also shows your IP address.
+ * The main menu screen for the game. Shows buttons for single player, hosting,
+ * joining multiplayer, and lets player set their username. Also shows your IP
+ * address.
  */
 public class MenuScreen implements Screen {
+
     private final Main game;
     private final Stage stage;
     private final Skin skin;
@@ -32,12 +32,13 @@ public class MenuScreen implements Screen {
     /**
      * Constructor sets up the UI stuff like buttons, labels, and input fields.
      * Adds listeners for button clicks.
-     * 
-     * @param game the main game instance, used to switch screens and set username
+     *
+     * @param game the main game instance, used to switch screens and set
+     * username
      */
     public MenuScreen(Main game) {
         this.game = game;
-        
+
         //screenviewport auto scales
         stage = new Stage(new ScreenViewport());
 
@@ -53,24 +54,68 @@ public class MenuScreen implements Screen {
         // blank background, can replace w/ skin when we add
 
         buttonStyle.up = buttonStyle.over = buttonStyle.down = new Drawable() {
-            @Override public float getLeftWidth() { return 0; }
-            @Override public void setLeftWidth(float width) {}
-            @Override public float getRightWidth() { return 0; }
-            @Override public void setRightWidth(float width) {}
-            @Override public float getTopHeight() { return 0; }
-            @Override public void setTopHeight(float height) {}
-            @Override public float getBottomHeight() { return 0; }
-            @Override public void setBottomHeight(float height) {}
-            @Override public float getMinWidth() { return 0; }
-            @Override public void setMinWidth(float minWidth) {}
-            @Override public float getMinHeight() { return 0; }
-            @Override public void setMinHeight(float minHeight) {}
-            @Override public void draw(com.badlogic.gdx.graphics.g2d.Batch batch, float x, float y, float width, float height) {}
+            @Override
+            public float getLeftWidth() {
+                return 0;
+            }
+
+            @Override
+            public void setLeftWidth(float width) {
+            }
+
+            @Override
+            public float getRightWidth() {
+                return 0;
+            }
+
+            @Override
+            public void setRightWidth(float width) {
+            }
+
+            @Override
+            public float getTopHeight() {
+                return 0;
+            }
+
+            @Override
+            public void setTopHeight(float height) {
+            }
+
+            @Override
+            public float getBottomHeight() {
+                return 0;
+            }
+
+            @Override
+            public void setBottomHeight(float height) {
+            }
+
+            @Override
+            public float getMinWidth() {
+                return 0;
+            }
+
+            @Override
+            public void setMinWidth(float minWidth) {
+            }
+
+            @Override
+            public float getMinHeight() {
+                return 0;
+            }
+
+            @Override
+            public void setMinHeight(float minHeight) {
+            }
+
+            @Override
+            public void draw(com.badlogic.gdx.graphics.g2d.Batch batch, float x, float y, float width, float height) {
+            }
         };
 
         buttonStyle.font = game.font;
         skin.add("default", buttonStyle);
-        
+
         TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
         textFieldStyle.font = game.font;
         textFieldStyle.fontColor = com.badlogic.gdx.graphics.Color.WHITE;
@@ -85,22 +130,19 @@ public class MenuScreen implements Screen {
 
         Label title = new Label("Welcome to 2D Shooter", skin);
         title.setAlignment(Align.center);
-        
+
         Label usernameLabel = new Label("Your Username:", skin);
         TextField usernameField = new TextField("Player", skin);
 
         TextButton singlePlayerBtn = new TextButton("Single Player", skin);
-        TextButton hostBtn         = new TextButton("Host Multiplayer", skin);
-        TextButton joinBtn         = new TextButton("Join Multiplayer", skin);
+        TextButton hostBtn = new TextButton("Host Multiplayer", skin);
+        TextButton joinBtn = new TextButton("Join Multiplayer", skin);
 
         String ipText;
-        try 
-        {
+        try {
             InetAddress localHost = InetAddress.getLocalHost();
             ipText = "Your IP: " + localHost.getHostAddress();
-        } 
-        catch (java.net.UnknownHostException e) 
-        {
+        } catch (java.net.UnknownHostException e) {
             ipText = "can't determine your IP";
         }
         Label ipLabel = new Label(ipText, skin);
@@ -109,37 +151,37 @@ public class MenuScreen implements Screen {
         // add rows w/ spacing
         float pad = 20f;
         root.add(title).padBottom(pad * 2).row();
-        
+
         Table usernameTable = new Table();
         usernameTable.add(usernameLabel).padRight(10);
         usernameTable.add(usernameField).width(200);
         root.add(usernameTable).padBottom(pad * 2).row();
-        
+
         root.add(singlePlayerBtn).padBottom(pad).width(300).row();
         root.add(hostBtn).padBottom(pad).width(300).row();
         root.add(joinBtn).padBottom(pad * 2).width(300).row();
         root.add(ipLabel);
 
         // listeners - idk how these work, youtbe tutorial
-        
-        singlePlayerBtn.addListener(new ChangeListener() 
-        {
-            @Override public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) 
-            {
+        singlePlayerBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
                 game.setUsername(usernameField.getText());
                 game.startGame(false, false, null);
             }
         });
 
         hostBtn.addListener(new ChangeListener() {
-            @Override public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+            @Override
+            public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
                 game.setUsername(usernameField.getText());
                 game.startGame(true, true, "localhost");
             }
         });
 
         joinBtn.addListener(new ChangeListener() {
-            @Override public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+            @Override
+            public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
                 game.setUsername(usernameField.getText());
                 game.setScreen(new IPInputScreen(game));
             }
@@ -147,8 +189,7 @@ public class MenuScreen implements Screen {
     }
 
     /**
-     * Called when this screen is shown.
-     * Sets input focus to this screen.
+     * Called when this screen is shown. Sets input focus to this screen.
      */
     @Override
     public void show() {
@@ -156,9 +197,8 @@ public class MenuScreen implements Screen {
     }
 
     /**
-     * Called every frame to draw stuff.
-     * Clears screen and draws UI stage.
-     * 
+     * Called every frame to draw stuff. Clears screen and draws UI stage.
+     *
      * @param delta time since last frame
      */
     @Override
@@ -171,9 +211,9 @@ public class MenuScreen implements Screen {
     }
 
     /**
-     * Called when screen size changes.
-     * Updates the viewport to new width and height.
-     * 
+     * Called when screen size changes. Updates the viewport to new width and
+     * height.
+     *
      * @param width new screen width
      * @param height new screen height
      */
@@ -181,27 +221,32 @@ public class MenuScreen implements Screen {
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
+
     /**
      * Called when game is paused. Nothing needed here.
      */
-    @Override public void pause() {}
+    @Override
+    public void pause() {
+    }
+
     /**
      * Called when game is resumed. Nothing needed here.
      */
-    @Override public void resume() {}
-    
+    @Override
+    public void resume() {
+    }
+
     /**
-     * Called when screen is hidden.
-     * Removes input focus from this screen.
+     * Called when screen is hidden. Removes input focus from this screen.
      */
-    @Override 
+    @Override
     public void hide() {
         Gdx.input.setInputProcessor(null);
     }
 
     /**
-     * Called when screen is closed to free resources.
-     * Disposes UI stage and skin.
+     * Called when screen is closed to free resources. Disposes UI stage and
+     * skin.
      */
     @Override
     public void dispose() {
