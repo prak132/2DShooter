@@ -18,12 +18,23 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import io.github.shooter.Main;
 
-
+/**
+ * The main menu screen for the game.
+ * Shows buttons for single player, hosting, joining multiplayer,
+ * and lets player set their username.
+ * Also shows your IP address.
+ */
 public class MenuScreen implements Screen {
     private final Main game;
     private final Stage stage;
     private final Skin skin;
 
+    /**
+     * Constructor sets up the UI stuff like buttons, labels, and input fields.
+     * Adds listeners for button clicks.
+     * 
+     * @param game the main game instance, used to switch screens and set username
+     */
     public MenuScreen(Main game) {
         this.game = game;
         
@@ -135,11 +146,21 @@ public class MenuScreen implements Screen {
         });
     }
 
+    /**
+     * Called when this screen is shown.
+     * Sets input focus to this screen.
+     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
     }
 
+    /**
+     * Called every frame to draw stuff.
+     * Clears screen and draws UI stage.
+     * 
+     * @param delta time since last frame
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0.1f, 1);
@@ -149,19 +170,39 @@ public class MenuScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Called when screen size changes.
+     * Updates the viewport to new width and height.
+     * 
+     * @param width new screen width
+     * @param height new screen height
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
-
+    /**
+     * Called when game is paused. Nothing needed here.
+     */
     @Override public void pause() {}
+    /**
+     * Called when game is resumed. Nothing needed here.
+     */
     @Override public void resume() {}
     
+    /**
+     * Called when screen is hidden.
+     * Removes input focus from this screen.
+     */
     @Override 
     public void hide() {
         Gdx.input.setInputProcessor(null);
     }
 
+    /**
+     * Called when screen is closed to free resources.
+     * Disposes UI stage and skin.
+     */
     @Override
     public void dispose() {
         stage.dispose();

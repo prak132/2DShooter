@@ -13,12 +13,20 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
+/**
+ * Represents the game map, including background and obstacles.
+ * Loads collision data from a Tiled map to figure out where players can't walk.
+ */
 public class GameMap {
     
     private final Texture background;
     private final Array<Rectangle> obstacles;
     private final TiledMap map;
     
+    /**
+     * Loads the background and collision objects from the Tiled map file.
+     * It grabs all collision shapes and puts their bounding rectangles into obstacles.
+     */
     public GameMap() {
         background = new Texture("map.png");
         obstacles = new Array<>();
@@ -48,14 +56,28 @@ public class GameMap {
         }
     }
 
+    /**
+     * Draws the background texture on the screen.
+     * 
+     * @param batch The sprite batch used for drawing.
+     */
     public void render(SpriteBatch batch) {
         batch.draw(background, 0, 0);
     }
 
+    /**
+     * Returns the list of obstacles on the map.
+     * You can use these to check collisions with players or bullets.
+     * 
+     * @return Array of rectangular obstacles.
+     */
     public Array<Rectangle> getObstacles() {
         return obstacles;
     }
 
+    /**
+     * Clean up resources when you're done with the map.
+     */
     public void dispose() {
         background.dispose();
         map.dispose();

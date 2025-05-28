@@ -19,9 +19,8 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.shooter.Main;
 
 /**
- * Constructs the IP input screen where the user can enter a server address.
- *
- * @param game main game instance
+ * Screen where user can type in the server IP to join multiplayer.
+ * Has input box for IP, connect and back buttons.
  */
 public class IPInputScreen implements Screen {
     private final Main game;
@@ -29,6 +28,11 @@ public class IPInputScreen implements Screen {
     private final Skin skin;
     private TextField ipField;
     
+    /**
+     * Constructs the IP input screen where the user can enter a server address.
+     *
+     * @param game main game instance
+     */
     public IPInputScreen(Main game) {
         this.game = game;
 
@@ -106,6 +110,9 @@ public class IPInputScreen implements Screen {
         stage.setKeyboardFocus(ipField);
     }
     
+    /**
+     * Tries to start multiplayer game with typed IP if not empty.
+     */
     private void connect() {
         String ip = ipField.getText().trim();
         if (!ip.isEmpty()) {
@@ -115,13 +122,18 @@ public class IPInputScreen implements Screen {
 
 
     /**
- * Attempts to start the game with the entered IP address if not empty.
- */
+     * Attempts to start the game with the entered IP address if not empty.
+     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
     }
 
+    /**
+     * Draws the screen every frame.
+     * Checks for enter key to connect, escape key to go back.
+     * @param delta time since last frame
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0.1f, 1);
@@ -139,6 +151,11 @@ public class IPInputScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Called when screen size changes, updates viewport.
+     * @param width new width
+     * @param height new height
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
@@ -148,6 +165,9 @@ public class IPInputScreen implements Screen {
     @Override public void pause() {}
     @Override public void resume() {}
     
+    /**
+     * Clean up resources when screen is closed.
+     */
     @Override
     public void dispose() {
         stage.dispose();

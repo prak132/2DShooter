@@ -9,24 +9,44 @@ import io.github.shooter.multiplayer.Network.PlayerDisconnected;
 import io.github.shooter.multiplayer.Network.PlayerHit;
 import io.github.shooter.multiplayer.Network.PlayerUpdate;
 
+/**
+ * Listens for server messages and updates the GameClient accordingly.
+ * Handles player updates, bullet events, player hits, ping responses,
+ * and player disconnections.
+ */
 public class ClientListener extends Listener {
     private GameClient gameClient;
     
     private BulletListener bulletListener;
     private PlayerHitListener playerHitListener;
     
+    /**
+     * Creates a listener that will update the given GameClient.
+     * @param gameClient The game client to update on network events.
+     */
     public ClientListener(GameClient gameClient) {
         this.gameClient = gameClient;
     }
     
+    /**
+     * Sets the listener for bullet fired events.
+     * @param listener Listener called when bullets are fired by other players.
+     */
     public void setBulletListener(BulletListener listener) {
         this.bulletListener = listener;
     }
     
+    /**
+     * Sets the listener for player hit events.
+     * @param listener Listener called when this client is hit by another player.
+     */
     public void setPlayerHitListener(PlayerHitListener listener) {
         this.playerHitListener = listener;
     }
     
+    /**
+     * Handles received network objects and updates game state accordingly.
+     */
     @Override
     public void received(Connection connection, Object object) {
         if (object instanceof PlayerUpdate) {
@@ -55,10 +75,16 @@ public class ClientListener extends Listener {
         }
     }
     
+    /**
+     * Listener interface for receiving bullet fired events from other players.
+     */
     public interface BulletListener {
         void onBulletFired(int playerId, float x, float y, float dirX, float dirY, float damage);
     }
     
+    /**
+     * Listener interface for receiving notifications when this player is hit.
+     */
     public interface PlayerHitListener {
         void onPlayerHit(int sourceId, float damage);
     }

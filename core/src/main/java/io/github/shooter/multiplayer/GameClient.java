@@ -14,6 +14,11 @@ import io.github.shooter.multiplayer.Network.PingRequest;
 import io.github.shooter.multiplayer.Network.PlayerHit;
 import io.github.shooter.multiplayer.Network.PlayerUpdate;
 
+
+/**
+ * Handles client-side connection to game server,
+ * sending and receiving multiplayer data.
+ */
 public class GameClient {
     private Client client;
     private int clientId;
@@ -25,10 +30,22 @@ public class GameClient {
     private long currentPing = 0;
     private static final long PING_INTERVAL = 1000;
 
+    /**
+     * Connects to server at given address with messages shown by default.
+     * @param serverAddress IP or hostname of server to connect to
+     * @throws IOException if connection fails
+     */
     public GameClient(String serverAddress) throws IOException {
         this(serverAddress, true);
     }
     
+    /**
+     * Connects to server at given address.
+     * Can disable connection messages.
+     * @param serverAddress IP or hostname of server to connect to
+     * @param showMessages if true, prints connection info to console
+     * @throws IOException if connection fails
+     */
     public GameClient(String serverAddress, boolean showMessages) throws IOException {
         if (showMessages) {
             System.out.println("Attempting to connect to: " + serverAddress);
@@ -81,14 +98,19 @@ public class GameClient {
         }
     }
 
+    /** Returns this client's network ID. */
     public int getClientId() {
         return clientId;
     }
     
+    /** Returns the Kryonet client object. */
     public Client getClient() {
         return client;
     }
 
+    /**
+     * Sends player's position, health, rotation, username, and kills to server.
+     */
     public void sendPlayerUpdate(float x, float y, float health, boolean alive, float rotation, String username, int kills) {
         PlayerUpdate update = new PlayerUpdate();
         update.id = clientId;
@@ -102,6 +124,9 @@ public class GameClient {
         client.sendTCP(update);
     }
     
+    /**
+     * Sends bullet shot info to server.
+     */
     public void sendBulletShot(float x, float y, float dirX, float dirY, float damage) {
         BulletUpdate update = new BulletUpdate();
         update.playerId = clientId;
@@ -113,6 +138,10 @@ public class GameClient {
         client.sendTCP(update);
     }
     
+    /**
+     * Sends info about hitting another player.
+     * Marks fatal if damage >= target's health.
+     */
     public void sendPlayerHit(int targetId, float damage) {
         PlayerHit hit = new PlayerHit();
         hit.sourceId = clientId;
@@ -126,6 +155,9 @@ public class GameClient {
         client.sendTCP(hit);
     }
     
+    /**
+     * Updates or adds info about another player.
+     */
     public void updateOtherPlayer(int playerId, float x, float y, float health, boolean alive, float rotation, String username, int kills) {
         if (playerId != clientId) {
             PlayerData data = otherPlayers.get(playerId);
@@ -138,16 +170,19 @@ public class GameClient {
         }
     }
     
+    /** Initializes textures for all enemy players */
     public void initializeEnemyTextures() {
         for (PlayerData data : otherPlayers.values()) {
             data.enemyPlayer.initializeTexture();
         }
     }
-    
+
+    /** Returns map of other players by their IDs */
     public Map<Integer, PlayerData> getOtherPlayers() {
         return otherPlayers;
     }
     
+    /** Removes player from map and logs */
     public void removePlayer(int playerId) {
         if (otherPlayers.containsKey(playerId)) {
             otherPlayers.remove(playerId);
@@ -155,11 +190,13 @@ public class GameClient {
         }
     }
     
+    /** Disposes all enemy player textures and clears the list */
     public void disposeAllEnemyPlayers() {
         EnemyPlayer.disposeTexture();
         otherPlayers.clear();
     }
     
+    /** Closes client connection and disposes enemy players */
     public void close() {
         disposeAllEnemyPlayers();
         if (client != null) {
@@ -167,6 +204,9 @@ public class GameClient {
         }
     }
     
+    /**
+     * Sends ping request every second to measure latency.
+     */
     public void updatePing() {
         if (client != null && client.isConnected()) {
             long currentTime = TimeUtils.millis();
@@ -179,18 +219,24 @@ public class GameClient {
         }
     }
     
+    /** Calculates ping from timestamp received in response */
     public void receivePingResponse(long timestamp) {
         currentPing = TimeUtils.millis() - timestamp;
     }
     
+    /** Returns current ping in milliseconds */
     public long getPing() {
         return currentPing;
     }
     
+    /** Manually set current ping (rarely needed) */
     public void setCurrentPing(long currentPing) {
         this.currentPing = currentPing;
     }
     
+    /**
+     * Stores data and state about another player in the game.
+     */
     public static class PlayerData {
         public int id;
         public float x, y;
@@ -200,6 +246,9 @@ public class GameClient {
         public Circle hitbox;
         public EnemyPlayer enemyPlayer;
         
+        /**
+         * Creates new player data with position and default values.
+         */
         public PlayerData(int id, float x, float y) {
             this.id = id;
             this.x = x;
@@ -208,6 +257,10 @@ public class GameClient {
             this.enemyPlayer = new EnemyPlayer(x, y, PLAYER_RADIUS);
         }
         
+        /**
+         * Updates position, health, alive state, rotation.
+         * Also updates enemy player visuals.
+         */
         public void update(float x, float y, float health, boolean alive, float rotation) {
             this.x = x;
             this.y = y;
@@ -219,6 +272,9 @@ public class GameClient {
             this.enemyPlayer.setRotationAngleDeg(rotation);
         }
         
+        /**
+         * Same as update, but also updates username and kill count.
+         */
         public void update(float x, float y, float health, boolean alive, float rotation, String username, int kills) {
             update(x, y, health, alive, rotation);
             this.enemyPlayer.update(x, y, health, alive, username, kills);
