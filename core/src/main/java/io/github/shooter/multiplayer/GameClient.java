@@ -31,7 +31,9 @@ public class GameClient {
     private static final long PING_INTERVAL = 1000;
 
     /**
-     * Connects to server at given address with messages shown by default.
+     * Connects to server at given address with messages shown by default. The
+     * show messages parameter was really for a finished game where you don't
+     * want the user to see the info in the console but in a more intuitive way.
      *
      * @param serverAddress IP or hostname of server to connect to
      * @throws IOException if connection fails
@@ -41,7 +43,7 @@ public class GameClient {
     }
 
     /**
-     * Connects to server at given address. Can disable connection messages.
+     * Connects to server at given address.
      *
      * @param serverAddress IP or hostname of server to connect to
      * @param showMessages if true, prints connection info to console
@@ -144,8 +146,8 @@ public class GameClient {
     }
 
     /**
-     * Sends info about hitting another player. Marks fatal if damage >=
-     * target's health.
+     * Sends info about hitting another player. Fatal hits are when a player
+     * dies.
      */
     public void sendPlayerHit(int targetId, float damage) {
         PlayerHit hit = new PlayerHit();
@@ -153,7 +155,7 @@ public class GameClient {
         hit.targetId = targetId;
         hit.damage = damage;
         PlayerData target = otherPlayers.get(targetId);
-        if (target != null && target.health <= damage) {
+        if (target != null && target.alive && target.health <= damage) {
             hit.fatal = true;
         }
 
@@ -249,7 +251,8 @@ public class GameClient {
     }
 
     /**
-     * Manually set current ping (rarely needed)
+     * Manually set current ping (rarely needed) I don't know why I added this
+     * to be honest.
      */
     public void setCurrentPing(long currentPing) {
         this.currentPing = currentPing;
@@ -280,8 +283,7 @@ public class GameClient {
         }
 
         /**
-         * Updates position, health, alive state, rotation. Also updates enemy
-         * player visuals.
+         * Updates position, health, alive state, rotation.
          */
         public void update(float x, float y, float health, boolean alive, float rotation) {
             this.x = x;

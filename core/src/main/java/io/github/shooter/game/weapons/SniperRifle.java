@@ -2,8 +2,14 @@ package io.github.shooter.game.weapons;
 
 import com.badlogic.gdx.graphics.Color;
 
+/**
+ * Represents a sniper rifle weapon.
+ */
 public class SniperRifle extends Gun {
-
+   
+    /**
+     * Creates a new sniper rifle with its properties.
+     */
     public SniperRifle() {
         super(
                 "Sniper Rifle",

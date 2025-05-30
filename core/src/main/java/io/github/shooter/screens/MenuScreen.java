@@ -20,8 +20,8 @@ import io.github.shooter.Main;
 
 /**
  * The main menu screen for the game. Shows buttons for single player, hosting,
- * joining multiplayer, and lets player set their username. Also shows your IP
- * address.
+ * joining multiplayer, and lets the player set their username. Also shows the
+ * player's IP address.
  */
 public class MenuScreen implements Screen {
 
@@ -197,7 +197,7 @@ public class MenuScreen implements Screen {
     }
 
     /**
-     * Called every frame to draw stuff. Clears screen and draws UI stage.
+     * Called every frame to draw stuff.
      *
      * @param delta time since last frame
      */
@@ -211,8 +211,7 @@ public class MenuScreen implements Screen {
     }
 
     /**
-     * Called when screen size changes. Updates the viewport to new width and
-     * height.
+     * Dynamically resizes viewport.
      *
      * @param width new screen width
      * @param height new screen height
@@ -223,21 +222,21 @@ public class MenuScreen implements Screen {
     }
 
     /**
-     * Called when game is paused. Nothing needed here.
+     * Called when game is paused. Not used.
      */
     @Override
     public void pause() {
     }
 
     /**
-     * Called when game is resumed. Nothing needed here.
+     * Called when game is resumed. Not used.
      */
     @Override
     public void resume() {
     }
 
     /**
-     * Called when screen is hidden. Removes input focus from this screen.
+     * Called when screen is hidden. Removes inputs.
      */
     @Override
     public void hide() {
@@ -245,8 +244,7 @@ public class MenuScreen implements Screen {
     }
 
     /**
-     * Called when screen is closed to free resources. Disposes UI stage and
-     * skin.
+     * Called when screen is closed to free resources.
      */
     @Override
     public void dispose() {

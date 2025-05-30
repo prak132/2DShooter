@@ -156,7 +156,7 @@ public class IPInputScreen implements Screen {
     }
 
     /**
-     * Tries to start multiplayer game with typed IP if not empty.
+     * Tries to start multiplayer game with typed IP.
      */
     private void connect() {
         String ip = ipField.getText().trim();
@@ -166,7 +166,7 @@ public class IPInputScreen implements Screen {
     }
 
     /**
-     * Attempts to start the game with the entered IP address if not empty.
+     * Attempts to start the game with the entered IP address.
      */
     @Override
     public void show() {
@@ -174,8 +174,7 @@ public class IPInputScreen implements Screen {
     }
 
     /**
-     * Draws the screen every frame. Checks for enter key to connect, escape key
-     * to go back.
+     * Draws the screen every frame. Also has Keyboard backups.
      *
      * @param delta time since last frame
      */

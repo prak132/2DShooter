@@ -3,6 +3,7 @@ package io.github.shooter.multiplayer;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
+import io.github.shooter.multiplayer.GameClient.PlayerData;
 import io.github.shooter.multiplayer.Network.BulletUpdate;
 import io.github.shooter.multiplayer.Network.PingResponse;
 import io.github.shooter.multiplayer.Network.PlayerDisconnected;
@@ -66,6 +67,13 @@ public class ClientListener extends Listener {
             PlayerHit hit = (PlayerHit) object;
             if (hit.targetId == gameClient.getClientId() && playerHitListener != null) {
                 playerHitListener.onPlayerHit(hit.sourceId, hit.damage);
+            }
+            
+            if (hit.fatal && hit.sourceId != gameClient.getClientId()) {
+                PlayerData killerData = gameClient.getOtherPlayers().get(hit.sourceId);
+                if (killerData != null) {
+                    killerData.enemyPlayer.setKills(killerData.enemyPlayer.getKills() + 1);
+                }
             }
         } else if (object instanceof PingResponse) {
             PingResponse response = (PingResponse) object;

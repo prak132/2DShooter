@@ -180,9 +180,9 @@ public class GameScreen implements Screen {
                         otherPlayersHitboxes.put(entry.getKey(), entry.getValue().hitbox);
                     }
                 }
-                player.respawn(WORLD_WIDTH, WORLD_HEIGHT, otherPlayersHitboxes);
+                player.respawn(WORLD_WIDTH, WORLD_HEIGHT, otherPlayersHitboxes, map.getObstacles());
             } else {
-                player.respawn(WORLD_WIDTH, WORLD_HEIGHT);
+                player.respawn(WORLD_WIDTH, WORLD_HEIGHT, map.getObstacles());
             }
         }
 
@@ -334,6 +334,7 @@ public class GameScreen implements Screen {
         }
         batch.end();
 
+        // Leaderboard updates
         updateLeaderboard();
 
         batch.begin();
@@ -350,8 +351,7 @@ public class GameScreen implements Screen {
     }
 
     /**
-     * Processes WASD movement input and sets the player's velocity vector
-     * accordingly.
+     * Processes keyboard input and sets the player's velocity vector.
      */
     private void handleInput() {
         vel.set(0, 0);
@@ -401,7 +401,7 @@ public class GameScreen implements Screen {
 
     /**
      * Detects and handles bullet collisions with the player or other players.
-     * Applies damage and updates kill counts accordingly.
+     * Adds damage.
      */
     private void checkBulletCollisions() {
         if (!player.isAlive() || client == null) {
@@ -430,6 +430,9 @@ public class GameScreen implements Screen {
                         client.sendPlayerHit(e.getKey(), b.getDamage());
                         if (fatal) {
                             player.incrementKills();
+                            client.sendPlayerUpdate(player.getX(), player.getY(), player.getHealth(),
+                                    player.isAlive(), player.getRotationAngleDeg(),
+                                    player.getUsername(), player.getKills());
                         }
                         b.stop();
                         it.remove();

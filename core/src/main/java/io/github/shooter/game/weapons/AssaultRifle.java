@@ -2,8 +2,14 @@ package io.github.shooter.game.weapons;
 
 import com.badlogic.gdx.graphics.Color;
 
+/**
+ * Represents an assault rifle weapon.
+ */
 public class AssaultRifle extends Gun {
 
+    /**
+     * Creates a new assault rifle with its properties.
+     */
     public AssaultRifle() {
         super(
                 "Assault Rifle",

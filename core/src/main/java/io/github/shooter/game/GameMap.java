@@ -24,7 +24,7 @@ public class GameMap {
     private final TiledMap map;
 
     /**
-     * Loads the background and collision objects from the Tiled map file. It
+     * Loads the background and collision objects from the Tiled map It
      * grabs all collision shapes and puts their bounding rectangles into
      * obstacles.
      */
@@ -69,8 +69,7 @@ public class GameMap {
     }
 
     /**
-     * Returns the list of obstacles on the map. You can use these to check
-     * collisions with players or bullets.
+     * Returns the list of obstacles on the map.
      *
      * @return Array of rectangular obstacles.
      */

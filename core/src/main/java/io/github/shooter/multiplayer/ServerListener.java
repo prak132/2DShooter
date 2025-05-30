@@ -13,7 +13,7 @@ import io.github.shooter.multiplayer.Network.PlayerUpdate;
 
 /**
  * Listens for messages from clients on the server side. Handles different
- * network packets and broadcasts them as needed.
+ * network packets and broadcasts them.
  */
 public class ServerListener extends Listener {
 
@@ -29,8 +29,7 @@ public class ServerListener extends Listener {
     }
 
     /**
-     * Called when server gets message from client. Checks type and forwards to
-     * other clients as needed.
+     * Called when server gets message from client.
      *
      * @param connection the client connection that sent this
      * @param object the message object received
@@ -55,7 +54,7 @@ public class ServerListener extends Listener {
     }
 
     /**
-     * Called when client connects. Just prints client ID for now.
+     * Called when client connects.
      *
      * @param connection the client that connected
      */
@@ -65,7 +64,7 @@ public class ServerListener extends Listener {
     }
 
     /**
-     * Called when client disconnects. Notifies others that this player left.
+     * Called when client disconnects.
      *
      * @param connection the client that disconnected
      */

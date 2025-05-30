@@ -10,7 +10,8 @@ public class Network {
     public static final int port = 54555;
 
     /**
-     * Info about a player sent to update their position, health, etc.
+     * Info about a player sent to update their position, health, rotation,
+     * username, and kills.
      */
     public static class PlayerUpdate {
 
@@ -81,8 +82,7 @@ public class Network {
     }
 
     /**
-     * Registers all network classes to Kryo serializer. Must be called on both
-     * server and client before use.
+     * Registers all network classes to Kryo serializer.
      *
      * @param kryo Kryo instance to register classes with
      */

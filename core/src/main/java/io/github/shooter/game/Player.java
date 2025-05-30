@@ -21,8 +21,7 @@ import io.github.shooter.game.weapons.GunFactory.GunType;
 
 /**
  * The Player class represents the player character in the game. Handles
- * movement, shooting, health, respawning, and rendering. Pretty much your
- * in-game avatar with guns and all.
+ * movement, shooting, health, respawning, and rendering.
  */
 public class Player {
 
@@ -48,8 +47,7 @@ public class Player {
     private static final int MAX_RESPAWN_ATTEMPTS = 20;
 
     /**
-     * Creates a new player at the specified position with given size. Also
-     * loads default texture and sets up guns.
+     * Creates a new player at the specified position with given size.
      *
      * @param x initial x position
      * @param y initial y position
@@ -162,7 +160,7 @@ public class Player {
     /**
      * Tries to fire the current gun if the player is alive.
      *
-     * @return true if the gun fired successfully, false otherwise
+     * @return true if the gun fired successfully
      */
     public boolean attemptToFire() {
         if (!alive) {
@@ -176,7 +174,7 @@ public class Player {
      *
      * @param dirX x direction of fire
      * @param dirY y direction of fire
-     * @return true if fired, false otherwise
+     * @return true if fired
      */
     public boolean fireAt(float dirX, float dirY) {
         if (!alive) {
@@ -229,7 +227,7 @@ public class Player {
     }
 
     /**
-     * Renders some info about the current gun (like reload status).
+     * Renders some info about the current gun.
      *
      * @param batch SpriteBatch to draw with
      * @param font BitmapFont used for drawing text
@@ -247,7 +245,7 @@ public class Player {
     }
 
     /**
-     * Apply damage to the player. If health hits zero, they die.
+     * Apply damage to the player.
      *
      * @param dmg amount of damage to apply
      */
@@ -268,28 +266,37 @@ public class Player {
      * @param w width of the playable area
      * @param h height of the playable area
      * @param otherPlayers map of other players to avoid when spawning
+     * @param obstacles array of obstacles to avoid spawning inside
      */
-    public void respawn(float w, float h, Map<Integer, ?> otherPlayers) {
+    public void respawn(float w, float h, Map<Integer, ?> otherPlayers, Array<Rectangle> obstacles) {
         alive = true;
         health = 200f;
-
-        if (otherPlayers == null || otherPlayers.isEmpty()) {
-            hitbox.x = 100 + (float) Math.random() * (w - 200);
-            hitbox.y = 100 + (float) Math.random() * (h - 200);
-            return;
-        }
 
         for (int attempt = 0; attempt < MAX_RESPAWN_ATTEMPTS; attempt++) {
             float x = 100 + (float) Math.random() * (w - 200);
             float y = 100 + (float) Math.random() * (h - 200);
             boolean positionIsGood = true;
-            for (Object playerObj : otherPlayers.values()) {
-                if (playerObj instanceof Circle) {
-                    Circle otherHitbox = (Circle) playerObj;
-                    float distance = Vector2.dst(x, y, otherHitbox.x, otherHitbox.y);
-                    if (distance < MIN_SPAWN_DISTANCE) {
-                        positionIsGood = false;
-                        break;
+            Circle tempHitbox = new Circle(x, y, hitbox.radius);
+            for (Rectangle obstacle : obstacles) {
+                if (Intersector.overlaps(tempHitbox, obstacle)) {
+                    positionIsGood = false;
+                    break;
+                }
+            }
+            
+            if (!positionIsGood) {
+                continue;
+            }
+            
+            if (otherPlayers != null && !otherPlayers.isEmpty()) {
+                for (Object playerObj : otherPlayers.values()) {
+                    if (playerObj instanceof Circle) {
+                        Circle otherHitbox = (Circle) playerObj;
+                        float distance = Vector2.dst(x, y, otherHitbox.x, otherHitbox.y);
+                        if (distance < MIN_SPAWN_DISTANCE) {
+                            positionIsGood = false;
+                            break;
+                        }
                     }
                 }
             }
@@ -301,18 +308,40 @@ public class Player {
             }
         }
 
+        for (int attempt = 0; attempt < MAX_RESPAWN_ATTEMPTS; attempt++) {
+            float x = 100 + (float) Math.random() * (w - 200);
+            float y = 100 + (float) Math.random() * (h - 200);
+            
+            Circle tempHitbox = new Circle(x, y, hitbox.radius);
+            boolean positionIsGood = true;
+            
+            for (Rectangle obstacle : obstacles) {
+                if (Intersector.overlaps(tempHitbox, obstacle)) {
+                    positionIsGood = false;
+                    break;
+                }
+            }
+            
+            if (positionIsGood) {
+                hitbox.x = x;
+                hitbox.y = y;
+                return;
+            }
+        }
+        // handle edge case
         hitbox.x = 100 + (float) Math.random() * (w - 200);
         hitbox.y = 100 + (float) Math.random() * (h - 200);
     }
 
     /**
-     * Convenience method to respawn without worrying about other players.
+     * Helper method to respawn while handling edge cases.
      *
      * @param w width of playable area
      * @param h height of playable area
+     * @param obstacles array of obstacles to avoid spawning inside
      */
-    public void respawn(float w, float h) {
-        respawn(w, h, null);
+    public void respawn(float w, float h, Array<Rectangle> obstacles) {
+        respawn(w, h, null, obstacles);
     }
 
     /**
@@ -372,7 +401,7 @@ public class Player {
     /**
      * Checks if the player is alive.
      *
-     * @return true if alive, false otherwise
+     * @return true if alive
      */
     public boolean isAlive() {
         return alive;
@@ -390,7 +419,7 @@ public class Player {
     /**
      * Marks if the player is firing or not.
      *
-     * @param firing true if firing, false if not
+     * @param firing true if firing
      */
     public void setIsFiring(boolean firing) {
         this.isFiring = firing;
@@ -413,7 +442,7 @@ public class Player {
     }
 
     /**
-     * Sets the rotation angle the player is facing (in degrees).
+     * Sets the rotation angle the player is facing.
      *
      * @param angle angle in degrees
      */
@@ -458,7 +487,7 @@ public class Player {
     }
 
     /**
-     * Updates the player's username (if not empty).
+     * Updates the player's username.
      *
      * @param username new username string
      */
@@ -485,7 +514,7 @@ public class Player {
     }
 
     /**
-     * Sets the kill count explicitly.
+     * Sets the kill count.
      *
      * @param kills new kill count
      */
@@ -494,7 +523,7 @@ public class Player {
     }
 
     /**
-     * Renders the player's username above their character.
+     * Renders the player's username above their character dynamically.
      *
      * @param batch SpriteBatch to draw with
      * @param font BitmapFont to draw text

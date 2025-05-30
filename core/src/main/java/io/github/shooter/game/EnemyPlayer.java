@@ -7,8 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Circle;
 
 /**
- * Represents an enemy player in the game. Holds position, health, and status
- * info and handles rendering.
+ * Represents an enemy player in the game.
  */
 public class EnemyPlayer {
 
@@ -22,8 +21,7 @@ public class EnemyPlayer {
     private int kills = 0;
 
     /**
-     * Creates a new enemy player at given position with specified radius.
-     * Starts alive with full health.
+     * Creates a new enemy player at given position with given radius.
      *
      * @param x X coordinate for spawn position.
      * @param y Y coordinate for spawn position.
@@ -37,8 +35,7 @@ public class EnemyPlayer {
     }
 
     /**
-     * Loads the enemy player texture once if not loaded already. Call this
-     * before rendering any enemy players to avoid glitches.
+     * Loads the enemy player texture once if not loaded already.
      */
     public void initializeTexture() {
         if (!textureInitialized) {
@@ -65,8 +62,8 @@ public class EnemyPlayer {
     }
 
     /**
-     * Updates position, health, alive status, plus username and kills. Useful
-     * for syncing more info in multiplayer.
+     * Updates position, health, alive status, plus username and kills.
+     * Also syncs with other players.
      *
      * @param x New X coordinate.
      * @param y New Y coordinate.
@@ -83,7 +80,6 @@ public class EnemyPlayer {
 
     /**
      * Renders the enemy player sprite at its current position and rotation.
-     * Does nothing if enemy is dead or texture isn't ready.
      *
      * @param batch Sprite batch to draw with.
      */
@@ -106,8 +102,7 @@ public class EnemyPlayer {
     }
 
     /**
-     * Draws the enemy player's username above their sprite. Skips if the enemy
-     * isn't alive.
+     * Draws the enemy player's username above their sprite.
      *
      * @param batch Sprite batch for drawing text.
      * @param font BitmapFont to use for rendering the name.
@@ -173,8 +168,7 @@ public class EnemyPlayer {
     }
 
     /**
-     * Cleans up the static texture resource when the game shuts down. Call this
-     * to avoid memory leaks.
+     * Cleans up the static texture resource when the game shuts down.
      */
     public static void disposeTexture() {
         if (texture != null) {

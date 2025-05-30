@@ -4,8 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.TimeUtils;
 
 /**
- * Represents a bullet shot by a player. Keeps track of position, velocity,
- * damage, and lifetime.
+ * Represents a bullet shot by a player.
  */
 public class Bullet {
 
@@ -46,8 +45,7 @@ public class Bullet {
     }
 
     /**
-     * Updates bullet position based on velocity and time delta. Doesn't move if
-     * bullet is stopped.
+     * Updates bullet position based on velocity and time delta.
      *
      * @param delta Time since last update (seconds)
      */
@@ -60,8 +58,7 @@ public class Bullet {
     }
 
     /**
-     * Stops the bullet by zeroing velocity and marking it stopped. Usually
-     * called when it hits something.
+     * Stops the bullet by zeroing velocity and marking it stopped.
      */
     public void stop() {
         velocity.setZero();
@@ -89,50 +86,108 @@ public class Bullet {
         return TimeUtils.timeSinceMillis(creationTime) > lifetime;
     }
 
+    /**
+     * Sets the damage for a bullet.
+     */
     public void setDamage(float d) {
         damage = d;
     }
 
+    /**
+     * Gets the damage of the bullet.
+     *
+     * @return Damage value
+     */
     public float getDamage() {
         return damage;
     }
 
+    /**
+     * Sets the lifetime of a bullet.
+     *
+     * @param ms Lifetime in milliseconds
+     */
     public void setLifetime(long ms) {
         lifetime = ms;
     }
 
+    /**
+     * Set the bullet radius.
+     * 
+     * @param r Radius in pixels
+     */
     public void setRadius(float r) {
         radius = r;
     }
 
+    /**
+     * Gets the position of the bullet.
+     *
+     * @return Position in a 2D vector.
+     */
     public Vector2 getPosition() {
         return position;
     }
 
+    /**
+     * Gets the position of the bullet.
+     *
+     * @return X-Coordinate
+     */
     public float getX() {
         return position.x;
     }
 
+    /**
+     * Gets the position of the bullet.
+     *
+     * @return Y-Coordinate
+     */
     public float getY() {
         return position.y;
     }
 
+    /**
+     * Gets the velocity of the bullet.
+     *
+     * @return X-Component of the Velocity
+     */
     public float getVelX() {
         return velocity.x;
     }
 
+    /**
+     * Gets the velocity of the bullet.
+     *
+     * @return Y-Component of the Velocity
+     */
     public float getVelY() {
         return velocity.y;
     }
 
+    /**
+     * Gets the radius of the bullet's hitbox.
+     *
+     * @return Radius in pixels
+     */
     public float getRadius() {
         return radius;
     }
 
+    /**
+     * Gets the owner of the bullet.
+     *
+     * @return Owner ID
+     */
     public int getOwnerId() {
         return ownerId;
     }
 
+    /**
+     * Checks if the bullet has stopped meaning its "dead".
+     *
+     * @return true if the bullet is stopped
+     */
     public boolean isStopped() {
         return stopped;
     }

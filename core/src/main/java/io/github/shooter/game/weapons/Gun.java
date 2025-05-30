@@ -3,6 +3,9 @@ package io.github.shooter.game.weapons;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.TimeUtils;
 
+/**
+ * Represents a generic gun in the game.
+ */
 public abstract class Gun {
 
     protected String name;
@@ -22,6 +25,17 @@ public abstract class Gun {
     protected long lastShotTime;
     protected long reloadStartTime;
 
+    /**
+     * Constructs a new Gun with the specified properties.
+     *
+     * @param name The name of the gun.
+     * @param damage The damage dealt by each shot.
+     * @param fireRate The rate of fire in rounds per second.
+     * @param magazineSize The size of the magazine.
+     * @param reloadTime The time taken to reload in seconds.
+     * @param bulletSpeed The speed of the bullets in units per second.
+     * @param spread The spread of the bullets in degrees.
+     */
     public Gun(String name, float damage, float fireRate, int magazineSize,
             float reloadTime, float bulletSpeed, float spread) {
         this.name = name;
@@ -36,6 +50,11 @@ public abstract class Gun {
         this.isReloading = false;
     }
 
+    /**
+     * Fires the gun.
+     *
+     * @return true if the gun was fired.
+     */
     public boolean fire() {
         if (isReloading) {
             return false;
@@ -59,6 +78,9 @@ public abstract class Gun {
         return true;
     }
 
+    /**
+     * Reloads the gun.
+     */
     public void reload() {
         if (!isReloading && currentAmmo < magazineSize) {
             isReloading = true;
@@ -66,6 +88,9 @@ public abstract class Gun {
         }
     }
 
+    /**
+     * Updates the gun state.
+     */
     public void update() {
         if (isReloading) {
             long currentTime = TimeUtils.millis();
@@ -76,50 +101,108 @@ public abstract class Gun {
         }
     }
 
+    /**
+     * Applies recoil to the gun.
+     */
     public void gunRecoil() {
         gunLength += (gunMaxLength - gunLength) / 3.0f;
     }
 
+    /**
+     * Returns the color of the gun.
+     * 
+     * @return the color of the gun
+     */
     public Color getColor() {
         return gunColor;
     }
 
+    /**
+     * Returns the length of the gun.
+     * 
+     * @return the length of the gun
+     */
     public float getLength() {
         return gunLength;
     }
 
+    /**
+     * Returns the thickness of the gun.
+     * 
+     * @return the thickness of the gun
+     */
     public float getThickness() {
         return gunThickness;
     }
 
+    /**
+     * Returns the bullet speed.
+     * 
+     * @return the bullet speed
+     */
     public float getBulletSpeed() {
         return bulletSpeed;
     }
 
+    /**
+     * Returns the bullet spread.
+     * 
+     * @return the bullet spread
+     */
     public float getSpread() {
         return spread;
     }
 
+    /**
+     * Returns the bullet damage.
+     * 
+     * @return the bullet damage
+     */
     public float getDamage() {
         return damage;
     }
 
+    /**
+     * Returns the bullet ammo.
+     * 
+     * @return the bullet ammo
+     */
     public int getCurrentAmmo() {
         return currentAmmo;
     }
 
+    /**
+     * Returns the bullet magazine size.
+     * 
+     * @return the bullet magazine size
+     */
     public int getMagazineSize() {
         return magazineSize;
     }
 
+    /**
+     * Returns if the gun is reloading.
+     * 
+     * @return true if the gun is reloading
+     */
     public boolean isReloading() {
         return isReloading;
     }
 
+    /**
+     * Returns the gun's reload time.
+     * 
+     * @return the gun's reload time
+     */
     public float getReloadTime() {
         return reloadTime;
     }
 
+    /**
+     * Returns the bullet reload time that is remaining.
+     * 
+     * @return the bullet reload time that is remaining
+     */
     public float getReloadTimeRemaining() {
         if (!isReloading) {
             return 0;
@@ -129,6 +212,11 @@ public abstract class Gun {
         return Math.max(0, reloadTime - elapsed);
     }
 
+    /**
+     * Returns the gun name.
+     * 
+     * @return the gun name
+     */
     public String getName() {
         return name;
     }

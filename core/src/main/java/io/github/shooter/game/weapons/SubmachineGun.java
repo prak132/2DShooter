@@ -2,8 +2,14 @@ package io.github.shooter.game.weapons;
 
 import com.badlogic.gdx.graphics.Color;
 
+/**
+ * Represents a submachine gun weapon.
+ */
 public class SubmachineGun extends Gun {
 
+    /**
+     * Creates a new submachine gun with it's properties.
+     */
     public SubmachineGun() {
         super(
                 "Submachine Gun",
