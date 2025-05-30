@@ -25,25 +25,76 @@ import io.github.shooter.game.weapons.GunFactory.GunType;
  */
 public class Player {
 
+    /**
+     * Player hitbox
+     */
     private final Circle hitbox;
+    /**
+     * Player velocity vector
+     */
     private final Vector2 velocity;
+    /**
+     * Player texture for rendering
+     */
     private final Texture texture;
+    /**
+     * Maximum speed the player can move at
+     */
     private final float maxSpeed = 125f;
 
+    /**
+     * Player's movement speed
+     */
     private float speed = 125f;
+    /**
+     * Player's health
+     */
     private float health = 200f;
+    /**
+     * Whether the player is alive or not
+     */
     private boolean alive = true;
+    /**
+     * Time when the player can respawn after dying
+     */
     private long respawnTime = 0;
+    /**
+     * Delay before the player can respawn (ms)
+     */
     private static final long RESPAWN_DELAY = 3000;
+    /**
+     * Angle the player is facing in degrees
+     */
     private float rotationAngleDeg = 0f;
+    /**
+     * Player's display name
+     */
     private String username = "Player";
+    /**
+     * Number of kills the player has achieved
+     */
     private int kills = 0;
 
+    /**
+     * List of guns the player can switch between
+     */
     private Array<Gun> guns;
+    /**
+     * Index of the currently selected gun
+     */
     private int currentGunIndex;
+    /**
+     * Whether the player is currently firing their gun
+     */
     private boolean isFiring;
 
+    /**
+     * Minimum distance from other players when respawning
+     */
     private static final float MIN_SPAWN_DISTANCE = 300f;
+    /**
+     * Maximum number of attempts to find a valid respawn position
+     */
     private static final int MAX_RESPAWN_ATTEMPTS = 20;
 
     /**
@@ -283,11 +334,11 @@ public class Player {
                     break;
                 }
             }
-            
+
             if (!positionIsGood) {
                 continue;
             }
-            
+
             if (otherPlayers != null && !otherPlayers.isEmpty()) {
                 for (Object playerObj : otherPlayers.values()) {
                     if (playerObj instanceof Circle) {
@@ -311,17 +362,17 @@ public class Player {
         for (int attempt = 0; attempt < MAX_RESPAWN_ATTEMPTS; attempt++) {
             float x = 100 + (float) Math.random() * (w - 200);
             float y = 100 + (float) Math.random() * (h - 200);
-            
+
             Circle tempHitbox = new Circle(x, y, hitbox.radius);
             boolean positionIsGood = true;
-            
+
             for (Rectangle obstacle : obstacles) {
                 if (Intersector.overlaps(tempHitbox, obstacle)) {
                     positionIsGood = false;
                     break;
                 }
             }
-            
+
             if (positionIsGood) {
                 hitbox.x = x;
                 hitbox.y = y;

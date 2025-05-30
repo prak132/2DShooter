@@ -9,6 +9,9 @@ import com.esotericsoftware.kryonet.Server;
  */
 public class GameServer {
 
+    /**
+     * The server instance that handles network communication
+     */
     private Server server;
 
     /**

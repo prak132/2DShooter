@@ -24,9 +24,21 @@ import io.github.shooter.Main;
  */
 public class IPInputScreen implements Screen {
 
+    /**
+     * The main game instance
+     */
     private final Main game;
+    /**
+     * The stage for rendering UI elements
+     */
     private final Stage stage;
+    /**
+     * The skin used for UI styling
+     */
     private final Skin skin;
+    /**
+     * The text field where the user can input the server IP address
+     */
     private TextField ipField;
 
     /**

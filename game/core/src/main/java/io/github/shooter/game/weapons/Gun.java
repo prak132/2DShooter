@@ -8,21 +8,66 @@ import com.badlogic.gdx.utils.TimeUtils;
  */
 public abstract class Gun {
 
+    /**
+     * The name of the gun
+     */
     protected String name;
+    /**
+     * The damage dealt by each shot
+     */
     protected float damage;
-    protected float fireRate; // RPS
+    /**
+     * The rate of fire in rounds per second
+     */
+    protected float fireRate;
+    /**
+     * The size of the magazine
+     */
     protected int magazineSize;
-    protected float reloadTime; // sec
+    /**
+     * The time taken to reload in seconds
+     */
+    protected float reloadTime;
+    /**
+     * The speed of the bullets (P/s)
+     */
     protected float bulletSpeed;
-    protected float spread; // deg
+    /**
+     * The spread of the bullets in degrees
+     */
+    protected float spread;
+    /**
+     * The color of the gun
+     */
     protected Color gunColor = Color.GRAY;
+    /**
+     * The maximum length of the gun
+     */
     protected float gunMaxLength = 1.5f;
+    /**
+     * The current length of the gun
+     */
     protected float gunLength = 1.5f;
+    /**
+     * The thickness of the gun
+     */
     protected float gunThickness = 0.4f;
 
+    /**
+     * The current ammo in the magazine
+     */
     protected int currentAmmo;
+    /**
+     * Indicates if the gun is currently reloading
+     */
     protected boolean isReloading;
+    /**
+     * The time when the gun was last shot
+     */
     protected long lastShotTime;
+    /**
+     * The time when the gun started reloading
+     */
     protected long reloadStartTime;
 
     /**
@@ -110,7 +155,7 @@ public abstract class Gun {
 
     /**
      * Returns the color of the gun.
-     * 
+     *
      * @return the color of the gun
      */
     public Color getColor() {
@@ -119,7 +164,7 @@ public abstract class Gun {
 
     /**
      * Returns the length of the gun.
-     * 
+     *
      * @return the length of the gun
      */
     public float getLength() {
@@ -128,7 +173,7 @@ public abstract class Gun {
 
     /**
      * Returns the thickness of the gun.
-     * 
+     *
      * @return the thickness of the gun
      */
     public float getThickness() {
@@ -137,7 +182,7 @@ public abstract class Gun {
 
     /**
      * Returns the bullet speed.
-     * 
+     *
      * @return the bullet speed
      */
     public float getBulletSpeed() {
@@ -146,7 +191,7 @@ public abstract class Gun {
 
     /**
      * Returns the bullet spread.
-     * 
+     *
      * @return the bullet spread
      */
     public float getSpread() {
@@ -155,7 +200,7 @@ public abstract class Gun {
 
     /**
      * Returns the bullet damage.
-     * 
+     *
      * @return the bullet damage
      */
     public float getDamage() {
@@ -164,7 +209,7 @@ public abstract class Gun {
 
     /**
      * Returns the bullet ammo.
-     * 
+     *
      * @return the bullet ammo
      */
     public int getCurrentAmmo() {
@@ -173,7 +218,7 @@ public abstract class Gun {
 
     /**
      * Returns the bullet magazine size.
-     * 
+     *
      * @return the bullet magazine size
      */
     public int getMagazineSize() {
@@ -182,7 +227,7 @@ public abstract class Gun {
 
     /**
      * Returns if the gun is reloading.
-     * 
+     *
      * @return true if the gun is reloading
      */
     public boolean isReloading() {
@@ -191,7 +236,7 @@ public abstract class Gun {
 
     /**
      * Returns the gun's reload time.
-     * 
+     *
      * @return the gun's reload time
      */
     public float getReloadTime() {
@@ -200,7 +245,7 @@ public abstract class Gun {
 
     /**
      * Returns the bullet reload time that is remaining.
-     * 
+     *
      * @return the bullet reload time that is remaining
      */
     public float getReloadTimeRemaining() {
@@ -214,7 +259,7 @@ public abstract class Gun {
 
     /**
      * Returns the gun name.
-     * 
+     *
      * @return the gun name
      */
     public String getName() {

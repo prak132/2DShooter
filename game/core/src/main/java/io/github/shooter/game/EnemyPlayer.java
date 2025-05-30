@@ -11,13 +11,37 @@ import com.badlogic.gdx.math.Circle;
  */
 public class EnemyPlayer {
 
+    /**
+     * The hitbox of the enemy player
+     */
     private final Circle hitbox;
+    /**
+     * The texture for the enemy player sprite
+     */
     private static Texture texture;
+    /**
+     * The rotation angle for rendering the sprite
+     */
     private float rotationAngleDeg;
+    /**
+     * Whether the enemy player is alive
+     */
     private boolean alive;
+    /**
+     * The current health of the enemy player
+     */
     private float health;
+    /**
+     * Whether the texture has been initialized
+     */
     private boolean textureInitialized = false;
+    /**
+     * The username of the enemy player
+     */
     private String username = "Player";
+    /**
+     * The number of kills this enemy player has
+     */
     private int kills = 0;
 
     /**
@@ -62,8 +86,8 @@ public class EnemyPlayer {
     }
 
     /**
-     * Updates position, health, alive status, plus username and kills.
-     * Also syncs with other players.
+     * Updates position, health, alive status, plus username and kills. Also
+     * syncs with other players.
      *
      * @param x New X coordinate.
      * @param y New Y coordinate.

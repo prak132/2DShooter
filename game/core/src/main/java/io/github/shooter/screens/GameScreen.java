@@ -39,38 +39,107 @@ import io.github.shooter.multiplayer.GameClient.PlayerData;
  */
 public class GameScreen implements Screen {
 
+    /**
+     * The width and height of the game world
+     */
     private static final float WORLD_WIDTH = 1312, WORLD_HEIGHT = 1232;
+    /**
+     * The radius of the player hitbox
+     */
     private static final float PLAYER_RADIUS = 16f;
 
+    /**
+     * The radius of the bullet hitbox
+     */
     private final Main game;
+    /**
+     * The camera used for rendering the game world
+     */
     private final OrthographicCamera camera;
+    /**
+     * The viewport used for rendering the game world
+     */
     private final Viewport viewport;
 
+    /**
+     * The camera used for rendering the UI
+     */
     private final OrthographicCamera uiCamera;
+    /**
+     * The viewport used for rendering the UI
+     */
     private final Viewport uiViewport;
 
+    /**
+     * The shape renderer used for drawing shapes
+     */
     private final ShapeRenderer shapeRenderer;
+    /**
+     * The sprite batch used for rendering stuff
+     */
     private final SpriteBatch batch;
 
+    /**
+     * The player controlled by the user
+     */
     private final Player player;
+    /**
+     * The game map containing obstacles and other elements
+     */
     private final GameMap map;
+    /**
+     * List of bullets currently in the game
+     */
     private final ArrayList<Bullet> bullets = new ArrayList<>();
 
+    /**
+     * The velocity vector for player movement
+     */
     private final Vector2 vel = new Vector2();
+    /**
+     * The acceleration vector for player movement
+     */
     private final float[] accel = {0, 0, 0, 0};
+    /**
+     * The slide factor for player movement
+     */
     private final float slide = 20f;
 
+    /**
+     * The time of the last shot fired by the player
+     */
     private long lastShot;
 
+    /**
+     * The position of the mouse in world coordinates
+     */
     private Vector3 mousePosition = new Vector3();
+    /**
+     * The direction the player is aiming at
+     */
     private Vector2 aimDirection = new Vector2();
 
+    /**
+     * Whether this game is in multiplayer mode
+     */
     private final boolean multiplayer;
+    /**
+     * The address of the server to connect to
+     */
     private final String serverAddress;
+    /**
+     * The game client used for multiplayer connections
+     */
     private GameClient client;
 
+    /**
+     * Input adapter for handling touch events
+     */
     private final InputAdapter input;
 
+    /**
+     * Leaderboard containing player scores
+     */
     private final ArrayList<PlayerScore> leaderboard = new ArrayList<>();
 
     /**

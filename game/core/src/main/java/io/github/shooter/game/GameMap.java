@@ -19,14 +19,22 @@ import com.badlogic.gdx.utils.Array;
  */
 public class GameMap {
 
+    /**
+     * The background texture of the map
+     */
     private final Texture background;
+    /**
+     * A list of rectangular obstacles
+     */
     private final Array<Rectangle> obstacles;
+    /**
+     * The Tiled map object that contains the map data
+     */
     private final TiledMap map;
 
     /**
-     * Loads the background and collision objects from the Tiled map It
-     * grabs all collision shapes and puts their bounding rectangles into
-     * obstacles.
+     * Loads the background and collision objects from the Tiled map It grabs
+     * all collision shapes and puts their bounding rectangles into obstacles.
      */
     public GameMap() {
         background = new Texture("map.png");

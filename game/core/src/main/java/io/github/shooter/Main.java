@@ -17,9 +17,21 @@ import io.github.shooter.screens.MenuScreen;
  */
 public class Main extends Game {
 
+    /**
+     * The main game instance
+     */
     public SpriteBatch batch;
+    /**
+     * The font used for rendering text in the game
+     */
     public BitmapFont font;
+    /**
+     * The game server instance for multiplayer functionality
+     */
     private GameServer server;
+    /**
+     * The player's username
+     */
     private String username = "Player";
 
     /**

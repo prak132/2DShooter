@@ -20,14 +20,35 @@ import io.github.shooter.multiplayer.Network.PlayerUpdate;
  */
 public class GameClient {
 
+    /**
+     * The client used to connect to the game server
+     */
     private Client client;
+    /**
+     * The unique ID
+     */
     private int clientId;
 
+    /**
+     * Stores data about other players in the game, indexed by their IDs
+     */
     private Map<Integer, PlayerData> otherPlayers = new HashMap<>();
+    /**
+     * The radius of the player hitbox
+     */
     private static final float PLAYER_RADIUS = 16f;
 
+    /**
+     * The last time a ping request was sent to the server
+     */
     private long lastPingSent;
+    /**
+     * The current ping in milliseconds
+     */
     private long currentPing = 0;
+    /**
+     * Interval in milliseconds for sending pings
+     */
     private static final long PING_INTERVAL = 1000;
 
     /**

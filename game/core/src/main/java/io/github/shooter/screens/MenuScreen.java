@@ -25,8 +25,17 @@ import io.github.shooter.Main;
  */
 public class MenuScreen implements Screen {
 
+    /**
+     * The main game instance
+     */
     private final Main game;
+    /**
+     * The stage for rendering UI elements
+     */
     private final Stage stage;
+    /**
+     * The skin used for UI styling
+     */
     private final Skin skin;
 
     /**

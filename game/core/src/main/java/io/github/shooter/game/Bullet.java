@@ -8,15 +8,39 @@ import com.badlogic.gdx.utils.TimeUtils;
  */
 public class Bullet {
 
+    /**
+     * The position of the bullet
+     */
     private final Vector2 position;
+    /**
+     * The velocity of the bullet
+     */
     private final Vector2 velocity;
 
+    /**
+     * The radius of the bullet
+     */
     private float radius = 5f;
+    /**
+     * The speed of the bullet in P/s
+     */
     private float speed = 400f;
+    /**
+     * The time when the bullet was created
+     */
     private final long creationTime;
+    /**
+     * The ID of the player who fired this bullet
+     */
     private final int ownerId;
 
+    /**
+     * The damage this bullet does to players
+     */
     private float damage = 25f;
+    /**
+     * The lifetime of the bullet (ms)
+     */
     private long lifetime = 1000;
 
     private boolean stopped = false;
@@ -113,7 +137,7 @@ public class Bullet {
 
     /**
      * Set the bullet radius.
-     * 
+     *
      * @param r Radius in pixels
      */
     public void setRadius(float r) {

@@ -7,6 +7,9 @@ import com.esotericsoftware.kryo.Kryo;
  */
 public class Network {
 
+    /**
+     * The port used for the multiplayer server when trying to connect over IPv4
+     */
     public static final int port = 54555;
 
     /**

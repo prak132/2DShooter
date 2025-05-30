@@ -17,6 +17,9 @@ import io.github.shooter.multiplayer.Network.PlayerUpdate;
  */
 public class ServerListener extends Listener {
 
+    /**
+     * The Kryonet server instance
+     */
     private Server server;
 
     /**

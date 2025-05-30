@@ -17,9 +17,18 @@ import io.github.shooter.multiplayer.Network.PlayerUpdate;
  */
 public class ClientListener extends Listener {
 
+    /**
+     * The GameClient instance that ts listener updates
+     */
     private GameClient gameClient;
 
+    /**
+     * Listener for bullet fired events
+     */
     private BulletListener bulletListener;
+    /**
+     * Listener for player hit events
+     */
     private PlayerHitListener playerHitListener;
 
     /**
@@ -68,7 +77,7 @@ public class ClientListener extends Listener {
             if (hit.targetId == gameClient.getClientId() && playerHitListener != null) {
                 playerHitListener.onPlayerHit(hit.sourceId, hit.damage);
             }
-            
+
             if (hit.fatal && hit.sourceId != gameClient.getClientId()) {
                 PlayerData killerData = gameClient.getOtherPlayers().get(hit.sourceId);
                 if (killerData != null) {
