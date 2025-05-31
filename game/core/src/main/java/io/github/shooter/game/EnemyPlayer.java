@@ -200,4 +200,22 @@ public class EnemyPlayer {
             texture = null;
         }
     }
+
+    /**
+     * Sets whether the enemy player is alive.
+     *
+     * @param alive whether the enemy player is alive
+     */
+    public void setAlive(boolean alive) {
+        this.alive = alive;
+    }
+
+    /**
+     * Sets the enemy player's health.
+     *
+     * @param health the new health value
+     */
+    public void setHealth(float health) {
+        this.health = health;
+    }
 }

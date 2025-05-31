@@ -3,6 +3,7 @@ package io.github.shooter;
 import java.io.IOException;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -12,8 +13,6 @@ import io.github.shooter.screens.MenuScreen;
 
 /**
  * The main game class that manages game-wide resources and screen transitions.
- * Sets up rendering tools and fonts, starts on the menu screen, handles
- * starting new games, manages the server which is self-hosted.
  */
 public class Main extends Game {
 
@@ -113,6 +112,19 @@ public class Main extends Game {
 
         if (server != null) {
             server.stop();
+        }
+    }
+
+    /**
+     * Resets the game state while keeping players connected.
+     * This is called when a player reaches 10 kills and players choose to play again.
+     */
+    public void resetGame() {
+        Screen currentScreen = getScreen();
+        if (currentScreen instanceof GameScreen) {
+            GameScreen gameScreen = (GameScreen) currentScreen;
+            gameScreen.resetGameState();
+            setScreen(gameScreen);
         }
     }
 }

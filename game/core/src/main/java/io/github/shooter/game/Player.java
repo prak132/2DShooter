@@ -591,4 +591,22 @@ public class Player {
 
         font.draw(batch, text, x, y);
     }
+
+    /**
+     * Sets the player's health value.
+     *
+     * @param health new health value
+     */
+    public void setHealth(float health) {
+        this.health = health;
+    }
+
+    /**
+     * Sets whether the player is alive.
+     *
+     * @param alive new alive status
+     */
+    public void setAlive(boolean alive) {
+        this.alive = alive;
+    }
 }

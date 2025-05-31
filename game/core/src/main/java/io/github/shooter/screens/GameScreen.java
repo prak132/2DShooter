@@ -22,6 +22,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -91,6 +92,7 @@ public class GameScreen implements Screen {
      * List of bullets currently in the game
      */
     private final ArrayList<Bullet> bullets = new ArrayList<>();
+    private final Object bulletsLock = new Object();
 
     /**
      * The velocity vector for player movement
@@ -104,11 +106,6 @@ public class GameScreen implements Screen {
      * The slide factor for player movement
      */
     private final float slide = 20f;
-
-    /**
-     * The time of the last shot fired by the player
-     */
-    private long lastShot;
 
     /**
      * The position of the mouse in world coordinates
@@ -201,28 +198,37 @@ public class GameScreen implements Screen {
         if (!multiplayer) {
             return;
         }
-        try {
-            client = new GameClient(serverAddress, true);
-            ClientListener l = new ClientListener(client);
-            l.setBulletListener((id, x, y, dx, dy, damage) -> {
-                Bullet bullet = new Bullet(x, y, dx, dy, id);
-                bullet.setDamage(damage);
-                bullet.setRadius(Math.min(5f + (damage / 10f), 10f));
-                bullets.add(bullet);
-            });
-            l.setPlayerHitListener((sourceId, dmg) -> {
-                float oldHealth = player.getHealth();
-                player.takeDamage(dmg);
-                if (oldHealth > 0 && player.getHealth() <= 0) {
-                    PlayerData killerData = client.getOtherPlayers().get(sourceId);
-                    if (killerData != null) {
-                        killerData.enemyPlayer.setKills(killerData.enemyPlayer.getKills() + 1);
-                    }
+        if (client == null || !client.getClient().isConnected()) {
+            try {
+                if (client != null) {
+                    client.close();
                 }
-            });
-            client.getClient().addListener(l);
-        } catch (IOException e) {
-            System.err.println("Connect failed: " + e.getMessage());
+                
+                client = new GameClient(serverAddress, true);
+                ClientListener l = new ClientListener(client);
+                l.setBulletListener((id, x, y, dx, dy, damage) -> {
+                    Bullet bullet = new Bullet(x, y, dx, dy, id);
+                    bullet.setDamage(damage);
+                    bullet.setRadius(Math.min(5f + (damage / 10f), 10f));
+                    synchronized (bulletsLock) {
+                        bullets.add(bullet);
+                    }
+                });
+                l.setPlayerHitListener((sourceId, dmg) -> {
+                    float oldHealth = player.getHealth();
+                    player.takeDamage(dmg);
+                    if (oldHealth > 0 && player.getHealth() <= 0) {
+                        PlayerData killerData = client.getOtherPlayers().get(sourceId);
+                        if (killerData != null && killerData.enemyPlayer != null) {
+                            killerData.enemyPlayer.setKills(killerData.enemyPlayer.getKills() + 1);
+                            updateLeaderboard();
+                        }
+                    }
+                });
+                client.getClient().addListener(l);
+            } catch (IOException e) {
+                System.err.println("Connect failed: " + e.getMessage());
+            }
         }
     }
 
@@ -240,6 +246,22 @@ public class GameScreen implements Screen {
         updateBullets(dt);
         if (multiplayer) {
             checkBulletCollisions();
+            if (player.getKills() >= 10) {
+                game.setScreen(new VictoryScreen(game, player.getUsername(), true, this));
+                return;
+            }
+            synchronized (client.getOtherPlayers()) {
+                for (PlayerData otherPlayer : client.getOtherPlayers().values()) {
+                    if (otherPlayer.enemyPlayer != null && otherPlayer.enemyPlayer.getKills() >= 10) {
+                        game.setScreen(new VictoryScreen(game, otherPlayer.enemyPlayer.getUsername(), false, this));
+                        return;
+                    }
+                }
+            }
+            
+            if (TimeUtils.millis() % 500 < 16) {
+                updateLeaderboard();
+            }
         }
         if (!player.isAlive() && player.shouldRespawn()) {
             if (multiplayer && client != null) {
@@ -293,7 +315,9 @@ public class GameScreen implements Screen {
                             bulletDirection.y * speed, owner);
                     bullet.setDamage(damage);
                     bullet.setRadius(Math.min(5f + (damage / 10f), 10f));
-                    bullets.add(bullet);
+                    synchronized (bulletsLock) {
+                        bullets.add(bullet);
+                    }
                     if (multiplayer && client != null) {
                         client.sendBulletShot(player.getX(), player.getY(),
                                 bulletDirection.x * speed,
@@ -321,15 +345,17 @@ public class GameScreen implements Screen {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeType.Filled);
 
-        for (Bullet b : bullets) {
-            shapeRenderer.setColor(1f, 0.3f, 0f, 1f); // orange
-            shapeRenderer.circle(b.getX(), b.getY(), b.getRadius());
+        synchronized (bulletsLock) {
+            for (Bullet b : bullets) {
+                shapeRenderer.setColor(1f, 0.3f, 0f, 1f); // orange
+                shapeRenderer.circle(b.getX(), b.getY(), b.getRadius());
 
-            shapeRenderer.setColor(1f, 0.5f, 0f, 0.6f);
-            shapeRenderer.circle(b.getX() - 0.01f * b.getVelX(), b.getY() - 0.01f * b.getVelY(), b.getRadius() * 0.8f);
+                shapeRenderer.setColor(1f, 0.5f, 0f, 0.6f);
+                shapeRenderer.circle(b.getX() - 0.01f * b.getVelX(), b.getY() - 0.01f * b.getVelY(), b.getRadius() * 0.8f);
 
-            shapeRenderer.setColor(1f, 0.7f, 0f, 0.3f);
-            shapeRenderer.circle(b.getX() - 0.02f * b.getVelX(), b.getY() - 0.02f * b.getVelY(), b.getRadius() * 0.6f);
+                shapeRenderer.setColor(1f, 0.7f, 0f, 0.3f);
+                shapeRenderer.circle(b.getX() - 0.02f * b.getVelX(), b.getY() - 0.02f * b.getVelY(), b.getRadius() * 0.6f);
+            }
         }
         if (player.isAlive()) {
             Gun currentGun = player.getCurrentGun();
@@ -357,6 +383,10 @@ public class GameScreen implements Screen {
         shapeRenderer.end();
 
         batch.begin();
+        
+        game.font.getData().setScale(1.0f);
+        game.font.setColor(1, 1, 1, 1);
+        
         player.render(batch);
         player.renderUsername(batch, game.font);
 
@@ -403,13 +433,6 @@ public class GameScreen implements Screen {
         }
         batch.end();
 
-        // Leaderboard updates
-        updateLeaderboard();
-
-        batch.begin();
-        renderLeaderboard(batch);
-        batch.end();
-
         if (multiplayer && client != null) {
             if (player.isAlive()) {
                 client.sendPlayerUpdate(player.getX(), player.getY(), player.getHealth(), true, player.getRotationAngleDeg(), player.getUsername(), player.getKills());
@@ -450,19 +473,21 @@ public class GameScreen implements Screen {
      * @param dt time delta since last frame, in seconds
      */
     private void updateBullets(float dt) {
-        for (Iterator<Bullet> it = bullets.iterator(); it.hasNext();) {
-            Bullet b = it.next();
-            b.update(dt);
-            if (b.isOutOfBounds(WORLD_WIDTH, WORLD_HEIGHT) || b.isExpired()) {
-                it.remove();
-                continue;
-            }
-            Circle bc = new Circle(b.getX(), b.getY(), b.getRadius());
-            for (Rectangle r : map.getObstacles()) {
-                if (Intersector.overlaps(bc, r)) {
-                    b.stop();
+        synchronized (bulletsLock) {
+            for (Iterator<Bullet> it = bullets.iterator(); it.hasNext();) {
+                Bullet b = it.next();
+                b.update(dt);
+                if (b.isOutOfBounds(WORLD_WIDTH, WORLD_HEIGHT) || b.isExpired()) {
                     it.remove();
-                    break;
+                    continue;
+                }
+                Circle bc = new Circle(b.getX(), b.getY(), b.getRadius());
+                for (Rectangle r : map.getObstacles()) {
+                    if (Intersector.overlaps(bc, r)) {
+                        b.stop();
+                        it.remove();
+                        break;
+                    }
                 }
             }
         }
@@ -476,36 +501,41 @@ public class GameScreen implements Screen {
         if (!player.isAlive() || client == null) {
             return;
         }
-        Map<Integer, PlayerData> others = client.getOtherPlayers();
-        for (Iterator<Bullet> it = bullets.iterator(); it.hasNext();) {
-            Bullet b = it.next();
-            if (b.isStopped()) {
-                continue;
-            }
-
-            Circle bc = new Circle(b.getX(), b.getY(), b.getRadius());
-            if (b.getOwnerId() != client.getClientId() && Intersector.overlaps(bc, player.getHitbox())) {
-                player.takeDamage(b.getDamage());
-                b.stop();
-                it.remove();
-                continue;
-            }
-
-            if (b.getOwnerId() == client.getClientId()) {
-                for (Map.Entry<Integer, PlayerData> e : others.entrySet()) {
-                    PlayerData targetData = e.getValue();
-                    if (targetData.alive && Intersector.overlaps(bc, targetData.hitbox)) {
-                        boolean fatal = targetData.health <= b.getDamage();
-                        client.sendPlayerHit(e.getKey(), b.getDamage());
-                        if (fatal) {
-                            player.incrementKills();
-                            client.sendPlayerUpdate(player.getX(), player.getY(), player.getHealth(),
-                                    player.isAlive(), player.getRotationAngleDeg(),
-                                    player.getUsername(), player.getKills());
+        
+        Map<Integer, PlayerData> others;
+        synchronized (client.getOtherPlayers()) {
+            others = new HashMap<>(client.getOtherPlayers());
+        }
+        
+        synchronized (bulletsLock) {
+            for (Iterator<Bullet> it = bullets.iterator(); it.hasNext();) {
+                Bullet b = it.next();
+                if (b.isStopped()) {
+                    continue;
+                }
+                Circle bc = new Circle(b.getX(), b.getY(), b.getRadius());
+                if (b.getOwnerId() != client.getClientId() && Intersector.overlaps(bc, player.getHitbox())) {
+                    player.takeDamage(b.getDamage());
+                    b.stop();
+                    it.remove();
+                    continue;
+                }
+                if (b.getOwnerId() == client.getClientId()) {
+                    for (Map.Entry<Integer, PlayerData> e : others.entrySet()) {
+                        PlayerData targetData = e.getValue();
+                        if (targetData.alive && Intersector.overlaps(bc, targetData.hitbox)) {
+                            boolean fatal = targetData.health <= b.getDamage();
+                            if (fatal) {
+                                player.incrementKills();
+                                client.sendPlayerUpdate(player.getX(), player.getY(), player.getHealth(),
+                                        player.isAlive(), player.getRotationAngleDeg(),
+                                        player.getUsername(), player.getKills());
+                            }
+                            client.sendPlayerHit(e.getKey(), b.getDamage(), player.getKills());
+                            b.stop();
+                            it.remove();
+                            break;
                         }
-                        b.stop();
-                        it.remove();
-                        break;
                     }
                 }
             }
@@ -513,18 +543,31 @@ public class GameScreen implements Screen {
     }
 
     /**
-     * Updates the leaderboard list with current player and enemy kill stats.
+     * The local player's score entry in the leaderboard
+     */
+    private PlayerScore localPlayerScore;
+
+    /**
+     * Updates the leaderboard list.
      */
     private void updateLeaderboard() {
-        leaderboard.clear();
-        leaderboard.add(new PlayerScore(player.getUsername(), player.getKills()));
-        if (multiplayer && client != null) {
-            for (PlayerData otherPlayer : client.getOtherPlayers().values()) {
-                leaderboard.add(new PlayerScore(otherPlayer.enemyPlayer.getUsername(),
-                        otherPlayer.enemyPlayer.getKills()));
+        synchronized (leaderboard) {
+            leaderboard.clear();
+            localPlayerScore = new PlayerScore(player.getUsername(), player.getKills());
+            leaderboard.add(localPlayerScore);
+            
+            if (multiplayer && client != null) {
+                synchronized (client.getOtherPlayers()) {
+                    for (PlayerData otherPlayer : client.getOtherPlayers().values()) {
+                        if (otherPlayer.enemyPlayer != null) {
+                            leaderboard.add(new PlayerScore(otherPlayer.enemyPlayer.getUsername(),
+                                    otherPlayer.enemyPlayer.getKills()));
+                        }
+                    }
+                }
             }
+            leaderboard.sort((a, b) -> Integer.compare(b.kills, a.kills));
         }
-        leaderboard.sort((a, b) -> Integer.compare(b.kills, a.kills));
     }
 
     /**
@@ -543,7 +586,7 @@ public class GameScreen implements Screen {
         for (int i = 0; i < leaderboard.size(); i++) {
             PlayerScore score = leaderboard.get(i);
             String entry = (i + 1) + ". " + score.username + " : " + score.kills;
-            if (score.username.equals(player.getUsername())) {
+            if (score == localPlayerScore) {
                 game.font.setColor(1, 0.8f, 0, 1);
             } else {
                 game.font.setColor(1, 1, 1, 1);
@@ -599,5 +642,61 @@ public class GameScreen implements Screen {
         if (client != null) {
             client.close();
         }
+    }
+
+    /**
+     * Resets everything in the game.
+     */
+    public void resetGameState() {
+        synchronized (bulletsLock) {
+            bullets.clear();
+        }
+        // reset all player states
+        player.setKills(0);
+        player.setHealth(200f);
+        player.setAlive(true);
+        
+        if (multiplayer && client != null && client.getClient().isConnected()) {
+            client.sendPlayerUpdate(
+                player.getX(), 
+                player.getY(), 
+                200f,
+                true,
+                player.getRotationAngleDeg(), 
+                player.getUsername(), 
+                0
+            );
+            
+            synchronized (client.getOtherPlayers()) {
+                for (PlayerData otherPlayer : client.getOtherPlayers().values()) {
+                    if (otherPlayer.enemyPlayer != null) {
+                        otherPlayer.enemyPlayer.setKills(0);
+                        otherPlayer.enemyPlayer.setAlive(true);
+                        otherPlayer.enemyPlayer.setHealth(200f);
+                    }
+                }
+            }
+            
+            Map<Integer, Circle> otherPlayersHitboxes = new HashMap<>();
+            synchronized (client.getOtherPlayers()) {
+                for (Map.Entry<Integer, PlayerData> entry : client.getOtherPlayers().entrySet()) {
+                    if (entry.getValue().alive) {
+                        otherPlayersHitboxes.put(entry.getKey(), entry.getValue().hitbox);
+                    }
+                }
+            }
+            player.respawn(WORLD_WIDTH, WORLD_HEIGHT, otherPlayersHitboxes, map.getObstacles());
+        } else {
+            player.respawn(WORLD_WIDTH, WORLD_HEIGHT, map.getObstacles());
+        }
+        
+        vel.set(0, 0);
+        for (int i = 0; i < accel.length; i++) {
+            accel[i] = 0;
+        }
+        player.setVelocity(vel);
+        player.setIsFiring(false);
+        
+        updateLeaderboard();
     }
 }

@@ -75,7 +75,7 @@ public class GameClient {
             System.out.println("Attempting to connect to: " + serverAddress);
         }
 
-        client = new Client();
+        client = new Client(32768, 32768);
         Network.register(client.getKryo());
         client.addListener(new ClientListener(this));
         client.start();
@@ -107,7 +107,7 @@ public class GameClient {
                 System.out.println("Connecting to host: " + host + " on port: " + port);
             }
 
-            client.connect(5000, host, port);
+            client.connect(15000, host, port);
             clientId = client.getID();
 
             if (showMessages) {
@@ -169,8 +169,12 @@ public class GameClient {
     /**
      * Sends info about hitting another player. Fatal hits are when a player
      * dies.
+     * 
+     * @param targetId ID of the player that was hit
+     * @param damage Amount of damage dealt
+     * @param currentKills Current kill count of the local player
      */
-    public void sendPlayerHit(int targetId, float damage) {
+    public void sendPlayerHit(int targetId, float damage, int currentKills) {
         PlayerHit hit = new PlayerHit();
         hit.sourceId = clientId;
         hit.targetId = targetId;
@@ -178,6 +182,7 @@ public class GameClient {
         PlayerData target = otherPlayers.get(targetId);
         if (target != null && target.alive && target.health <= damage) {
             hit.fatal = true;
+            hit.newKillCount = currentKills + 1;
         }
 
         client.sendTCP(hit);

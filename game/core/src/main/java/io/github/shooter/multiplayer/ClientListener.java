@@ -81,7 +81,11 @@ public class ClientListener extends Listener {
             if (hit.fatal && hit.sourceId != gameClient.getClientId()) {
                 PlayerData killerData = gameClient.getOtherPlayers().get(hit.sourceId);
                 if (killerData != null) {
-                    killerData.enemyPlayer.setKills(killerData.enemyPlayer.getKills() + 1);
+                    if (hit.newKillCount > 0) {
+                        killerData.enemyPlayer.setKills(hit.newKillCount);
+                    } else {
+                        killerData.enemyPlayer.setKills(killerData.enemyPlayer.getKills() + 1);
+                    }
                 }
             }
         } else if (object instanceof PingResponse) {

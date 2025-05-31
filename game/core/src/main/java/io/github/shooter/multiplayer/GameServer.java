@@ -21,7 +21,7 @@ public class GameServer {
      * @throws IOException if something goes wrong with binding the port
      */
     public GameServer() throws IOException {
-        server = new Server();
+        server = new Server(32768, 32768);
         Network.register(server.getKryo());
         server.addListener(new ServerListener(server));
         server.bind(Network.port);

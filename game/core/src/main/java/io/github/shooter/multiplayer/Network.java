@@ -47,6 +47,7 @@ public class Network {
         public int sourceId;
         public float damage = 25f;
         public boolean fatal = false;
+        public int newKillCount = 0;
     }
 
     /**
