@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"io.github.shooter"},{"l":"io.github.shooter.game"},{"l":"io.github.shooter.game.weapons"},{"l":"io.github.shooter.multiplayer"},{"l":"io.github.shooter.screens"}];updateSearchResults();
